@@ -1,0 +1,118 @@
+@model GunDammvc.Models.Product
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="page-header pb-0 border-0 bg-transparent">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb luxury-breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index">Shop</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5 mb-5 fade-in-up">
+    <div class="row g-5 align-items-center">
+        <!-- Left Side: Product Image -->
+        <div class="col-lg-6">
+            <div class="product-image-wrapper p-5 h-100 d-flex align-items-center justify-content-center" style="background-color: #F8F9FA;">
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? $"https://via.placeholder.com/600x800/F8F9FA/B0B0B0?text={Model.Grade}" : Model.ImageUrl)"
+                     class="img-fluid w-100 shadow-sm" alt="@Model.Name" style="object-fit: cover; border-radius: 0;">
+            </div>
+        </div>
+
+        <!-- Right Side: Product Information -->
+        <div class="col-lg-6 d-flex flex-column justify-content-center px-lg-5">
+            <p class="text-uppercase letter-spacing-1 text-muted mb-2 small">Collection / @Model.Grade</p>
+            <h1 class="display-5 font-serif mb-4">@Model.Name</h1>
+            <p class="fs-4 fw-bold mb-4" style="color: var(--luxury-gold);">@Model.Price.ToString("N0") VNĐ</p>
+
+            <div class="mb-5 text-muted" style="line-height: 1.8;">
+                <p>@(string.IsNullOrEmpty(Model.Description) ? "Experience the pinnacle of model kit engineering with this exquisite piece. Designed with precision and crafted for the ultimate collector, this model stands as a testament to the art of Gundam." : Model.Description)</p>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <p class="mb-0 text-uppercase letter-spacing-1 small fw-bold">Availability:</p>
+                @if (Model.Stock > 0)
+                {
+                    <span class="badge rounded-0 bg-dark text-white fw-normal px-3 py-2 letter-spacing-1">In Stock (@Model.Stock)</span>
+                }
+                else
+                {
+                    <span class="badge rounded-0 bg-secondary text-white fw-normal px-3 py-2 letter-spacing-1">Out of Stock</span>
+                }
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <p class="mb-0 text-uppercase letter-spacing-1 small fw-bold">Quantity:</p>
+                <div class="quantity-selector d-flex align-items-center border" style="width: 120px; border-radius: 2px;">
+                    <button type="button" class="btn btn-link text-decoration-none text-dark px-3 shadow-none" onclick="decreaseQty()">-</button>
+                    <input type="text" id="quantity-input" value="1" class="form-control border-0 text-center shadow-none p-0 bg-transparent" readonly>
+                    <button type="button" class="btn btn-link text-decoration-none text-dark px-3 shadow-none" onclick="increaseQty()">+</button>
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <button type="button" class="btn btn-luxury w-100 py-3 fs-6" onclick="handleAddToCart()" @(Model.Stock <= 0 ? "disabled" : "")>
+                    <i class="bi bi-cart-plus me-2"></i> Add To Cart
+                </button>
+            </div>
+            
+            <!-- Additional Luxury Assurances -->
+            <div class="mt-5 pt-4 border-top">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-shield-check fs-3 me-3" style="color: var(--luxury-gold);"></i>
+                    <div>
+                        <h6 class="mb-1 font-serif">Authenticity Guaranteed</h6>
+                        <small class="text-muted">100% original premium imported model kit.</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-box-seam fs-3 me-3" style="color: var(--luxury-gold);"></i>
+                    <div>
+                        <h6 class="mb-1 font-serif">Complimentary Shipping</h6>
+                        <small class="text-muted">Available on all premium orders worldwide.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .product-image-wrapper {
+            overflow: hidden;
+        }
+        .product-image-wrapper img {
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .product-image-wrapper:hover img {
+            transform: scale(1.05);
+        }
+    </style>
+    <script>
+        function decreaseQty() {
+            let qtyInput = document.getElementById('quantity-input');
+            let currentValue = parseInt(qtyInput.value);
+            if (currentValue > 1) {
+                qtyInput.value = currentValue - 1;
+            }
+        }
+        function increaseQty() {
+            let qtyInput = document.getElementById('quantity-input');
+            let currentValue = parseInt(qtyInput.value);
+            qtyInput.value = currentValue + 1;
+        }
+        function handleAddToCart() {
+            const quantity = parseInt(document.getElementById('quantity-input').value);
+            const productId = @Model.Id;
+            addToCartAjax(productId, quantity); // Gọi hàm AJAX ở _Layout
+        }
+    </script>
+}

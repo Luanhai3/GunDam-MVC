@@ -1,0 +1,113 @@
+@model IEnumerable<GunDammvc.Models.Order>
+@{
+    ViewData["Title"] = "Lịch Sử Mua Hàng";
+}
+
+<style>
+    .history-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .order-card {
+        border-radius: 2px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 30px;
+        background: #fff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+    .order-header {
+        background-color: #FDFBF7;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .order-body {
+        padding: 25px;
+    }
+    .product-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 2px;
+        border: 1px solid var(--border-color);
+    }
+</style>
+
+<div class="container py-5 history-container fade-in-up">
+    <h2 class="serif mb-4 text-center">Lịch Sử Mua Hàng</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-5 bg-white border" style="border-radius: 2px;">
+            <i class="bi bi-clock-history text-muted mb-3" style="font-size: 3rem;"></i>
+            <p class="text-muted fs-5 mt-2">Bạn chưa có đơn hàng nào.</p>
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-luxury mt-3">Bắt Đầu Mua Sắm</a>
+        </div>
+    }
+    else
+    {
+        foreach (var order in Model)
+        {
+            <div class="order-card">
+                <div class="order-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small d-block text-uppercase" style="letter-spacing: 1px;">Mã đơn hàng: #@order.OrderId</span>
+                        <div class="d-flex align-items-center mt-1">
+                            <span class="fw-bold me-2">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            @if (order.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark rounded-1">Chờ Xử Lý</span>
+                            }
+                            else if (order.Status == "Cancelled")
+                            {
+                                <span class="badge bg-danger rounded-1">Đã Hủy</span>
+                            }
+                            else if (order.Status == "Paid")
+                            {
+                                <span class="badge bg-success rounded-1">Đã Thanh Toán</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block text-uppercase" style="letter-spacing: 1px;">Tổng tiền</span>
+                        <span class="fw-bold fs-5" style="color: #c4a76a;">
+                            @order.OrderItems.Sum(i => i.UnitPrice * i.Quantity).ToString("N0") đ
+                        </span>
+                    </div>
+                </div>
+                <div class="order-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <tr>
+                                        <td style="width: 80px;">
+                                            <img src="@(string.IsNullOrEmpty(item.Product?.ImageUrl) ? $"https://via.placeholder.com/60/FDFBF7/B89B5E?text={item.Product?.Grade}" : item.Product.ImageUrl)" class="product-img" alt="@item.Product?.Name" />
+                                        </td>
+                                        <td>
+                                            <h6 class="mb-0 font-serif">@item.Product?.Name</h6>
+                                            <small class="text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.75rem;">Số lượng: @item.Quantity</small>
+                                        </td>
+                                        <td class="text-end fw-bold" style="color: var(--luxury-gold);">
+                                            @((item.UnitPrice * item.Quantity).ToString("N0")) đ
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        @if (order.Status == "Pending")
+                        {
+                            <div class="text-end mt-4 pt-3 border-top">
+                                <form asp-action="CancelOrder" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+                                    <button type="submit" class="btn btn-outline-danger px-4 py-2 rounded-1">Hủy Đơn Hàng</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

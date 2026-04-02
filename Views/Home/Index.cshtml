@@ -1,0 +1,202 @@
+﻿﻿@* Using Shared Layout *@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Trang Chủ";
+}
+
+<style>
+    /* HERO */
+    .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                    url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1600') center/cover no-repeat;
+        color: #fff;
+    }
+
+    .hero h1 {
+        font-size: 52px;
+        letter-spacing: 2px;
+    }
+
+    .hero p {
+        max-width: 650px;
+        margin: 20px auto 0;
+        color: #ddd;
+        font-size: 1.1rem;
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        align-items: center;
+    }
+
+    img {
+        width: 100%;
+        border-radius: 2px;
+    }
+
+    .text {
+        color: #555;
+        line-height: 1.9;
+        font-size: 1rem;
+    }
+
+    .divider {
+        width: 70px;
+        height: 1px;
+        background: #aaa;
+        margin: 20px 0;
+    }
+
+    /* FULL WIDTH IMAGE */
+    .full-image {
+        height: 500px;
+        background: url('https://images.unsplash.com/photo-1626450429795-a3ba2964ef7f?w=1600') center/cover fixed;
+        position: relative;
+    }
+
+    .full-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+    }
+
+    /* QUOTE */
+    .quote {
+        text-align: center;
+        font-size: 26px;
+        font-style: italic;
+        color: var(--text-primary);
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: 'Playfair Display', serif;
+    }
+
+    /* VALUES */
+    .values {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 60px;
+        text-align: center;
+    }
+
+    .value-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    /* CTA */
+    .cta {
+        background: var(--bg-color);
+        color: var(--text-primary);
+        text-align: center;
+        padding: 120px 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    @@media (max-width: 768px) {
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .values {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- HERO -->
+<section class="hero fade-in-up">
+    <div style="animation-delay: 0.2s;" class="fade-in-up">
+        <h1 class="serif">Không Gian Của Sự Chính Xác</h1>
+        <p>
+            Nơi những mô hình Gundam không chỉ được trưng bày, mà được tôn vinh như những tác phẩm thiết kế.
+        </p>
+    </div>
+</section>
+
+<!-- STORY -->
+<section class="container py-5 my-5 grid-2 fade-in-up">
+    <img src="https://plus.unsplash.com/premium_photo-1682124052966-e0e91a6e1cb1?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGd1bmRhbXxlbnwwfHwwfHx8MA%3D%3D">
+
+    <div>
+        <h2 class="serif">Khởi Nguồn</h2>
+        <div class="divider"></div>
+
+        <p class="text">
+            Từ một niềm đam mê nhỏ, chúng tôi bắt đầu hành trình khám phá thế giới Gunpla — nơi từng chi tiết nhỏ đều mang một ý nghĩa lớn.
+        </p>
+
+        <p class="text">
+            Qua thời gian, chúng tôi xây dựng nên một không gian nơi thiết kế, kỹ thuật và cảm xúc giao thoa.
+        </p>
+    </div>
+</section>
+
+<!-- FULL IMAGE BREAK -->
+<div class="full-image"></div>
+
+<!-- PHILOSOPHY -->
+<section class="container py-5 my-5 fade-in-up">
+    <h2 class="serif text-center mb-5" style="letter-spacing: 2px;">TRIẾT LÝ</h2>
+
+    <p class="quote">
+        “Sự hoàn hảo không phải là thêm vào, mà là loại bỏ những gì không cần thiết.”
+    </p>
+</section>
+
+<!-- VALUES -->
+<section class="container py-5 my-5 fade-in-up">
+    <h2 class="serif text-center mb-5" style="letter-spacing: 2px;">GIÁ TRỊ CỐT LÕI</h2>
+
+    <div class="values">
+        <div>
+            <div class="value-title">Tinh Tuyển</div>
+            <p class="text">Mỗi sản phẩm đều được lựa chọn kỹ lưỡng.</p>
+        </div>
+
+        <div>
+            <div class="value-title">Nghệ Thuật</div>
+            <p class="text">Tôn vinh thiết kế và sự hoàn thiện.</p>
+        </div>
+
+        <div>
+            <div class="value-title">Cân Bằng</div>
+            <p class="text">Giữa kỹ thuật và cảm xúc.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <h2 class="serif mb-4">Khám Phá Bộ Sưu Tập</h2>
+    <a asp-controller="Shop" asp-action="Index" class="btn btn-luxury">
+        Xem Sản Phẩm
+    </a>
+</section>
+
+@section Scripts {
+<script>
+    const items = document.querySelectorAll('.fade');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('show');
+            }
+        });
+    });
+
+    items.forEach(el => observer.observe(el));
+</script>
+}

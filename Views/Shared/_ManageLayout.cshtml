@@ -1,0 +1,30 @@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5 py-5 fade-in-up">
+    <div class="row">
+        <div class="col-md-3 mb-5 mb-md-0">
+            <h3 class="font-serif mb-4">Account</h3>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold border-bottom pb-2 hover-gold" asp-controller="Account" asp-action="Profile">Profile Settings</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold border-bottom pb-2 hover-gold" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-9 ps-lg-5 border-start">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+    <style>
+        .hover-gold { transition: color 0.3s ease; }
+        .hover-gold:hover { color: var(--luxury-gold) !important; }
+    </style>
+}

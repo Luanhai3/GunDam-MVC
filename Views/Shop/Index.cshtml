@@ -1,0 +1,215 @@
+@* Using Shared Layout *@
+@{ Layout = "_Layout"; }
+@model List<GunDammvc.Models.Product>
+
+@{
+    ViewData["Title"] = "Cửa Hàng";
+}
+
+<style>
+    .page-title {
+        text-align: center;
+        margin: 60px 0 40px;
+        letter-spacing: 2px;
+        font-size: 2.5rem;
+    }
+
+    .product-card {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border-radius: 2px;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 15px 35px rgba(0,0,0,0.03);
+        transform: translateY(-5px);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        border-top-left-radius: 2px;
+        border-top-right-radius: 2px;
+    }
+
+    .product-body {
+        padding: 25px 20px 15px;
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .product-title {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        font-family: 'Playfair Display', serif;
+        color: var(--text-primary);
+    }
+
+    .product-grade {
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .product-description {
+        font-size: 0.9rem;
+        color: #555;
+        height: 40px;
+        overflow: hidden;
+        display: none; /* Hide description for cleaner look */
+    }
+
+    .product-footer {
+        padding: 0 20px 25px;
+        font-weight: 500;
+        text-align: center;
+        color: var(--luxury-gold);
+        font-size: 1.1rem;
+    }
+
+    .filter-wrapper {
+        background: #fff;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 2px;
+    }
+
+    /* Pagination */
+    .pagination .page-link {
+        border: none;
+        color: var(--text-primary);
+        margin: 0 4px;
+        border-radius: 2px;
+        padding: 8px 16px;
+        background: transparent;
+        transition: 0.2s;
+    }
+
+    .pagination .page-link:hover {
+        background: var(--border-color);
+    }
+
+    .pagination .active .page-link {
+        background: var(--text-primary);
+        color: #fff;
+    }
+</style>
+
+<h2 class="page-title font-serif">Bộ Sưu Tập Sản Phẩm</h2>
+
+<div class="container mb-5 fade-in-up">
+    <form method="get" class="row g-3 justify-content-center align-items-center filter-wrapper shadow-sm" style="max-width: 1000px; margin: 0 auto;">
+        <div class="col-auto">
+            <select name="grade" class="form-select shadow-none border-0 bg-transparent" style="border-bottom: 1px solid var(--border-color) !important; border-radius: 0;">
+                <option value="">Tất cả Grade</option>
+                <option value="HG" selected="@(ViewBag.Grade == "HG")">HG - High Grade</option>
+                <option value="RG" selected="@(ViewBag.Grade == "RG")">RG - Real Grade</option>
+                <option value="MG" selected="@(ViewBag.Grade == "MG")">MG - Master Grade</option>
+                <option value="PG" selected="@(ViewBag.Grade == "PG")">PG - Perfect Grade</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="sortOrder" class="form-select shadow-none border-0 bg-transparent" style="border-bottom: 1px solid var(--border-color) !important; border-radius: 0;">
+                <option value="">Sắp xếp mặc định</option>
+                <option value="price_asc" selected="@(ViewBag.SortOrder == "price_asc")">Giá: Thấp đến Cao</option>
+                <option value="price_desc" selected="@(ViewBag.SortOrder == "price_desc")">Giá: Cao xuống Thấp</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="col-form-label text-muted small text-uppercase" style="letter-spacing: 1px;">Khoảng giá:</label>
+        </div>
+        <div class="col-auto">
+            <input type="number" name="minPrice" value="@ViewBag.MinPrice" class="form-control shadow-none border-0 bg-transparent text-center" placeholder="Từ" min="0" style="border-bottom: 1px solid var(--border-color) !important; border-radius: 0; width: 100px;" />
+        </div>
+        <div class="col-auto">-</div>
+        <div class="col-auto">
+            <input type="number" name="maxPrice" value="@ViewBag.MaxPrice" class="form-control shadow-none border-0 bg-transparent text-center" placeholder="Đến" min="0" style="border-bottom: 1px solid var(--border-color) !important; border-radius: 0; width: 100px;" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-luxury px-4 py-2"><i class="bi bi-funnel me-1"></i> Lọc</button>
+        </div>
+        @if (ViewBag.MinPrice != null || ViewBag.MaxPrice != null || !string.IsNullOrEmpty(ViewBag.Grade) || !string.IsNullOrEmpty(ViewBag.SortOrder))
+        {
+            <div class="col-auto">
+                <a asp-action="Index" class="btn btn-link text-muted text-decoration-none small text-uppercase" style="letter-spacing: 1px;">Xóa</a>
+            </div>
+        }
+    </form>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="container fade-in-up" style="animation-delay: 0.1s;">
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <a asp-controller="Shop" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
+                        <div class="product-card">
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? $"https://via.placeholder.com/400x400/FDFBF7/B89B5E?text={item.Grade}" : item.ImageUrl)"
+                                 class="product-image" />
+
+                            <div class="product-body">
+                                <div class="product-title">@item.Name</div>
+                                <div class="product-grade">Cấp độ: @item.Grade</div>
+                                <div class="product-description">@item.Description</div>
+                            </div>
+
+                            <div class="product-footer">
+                                <span>@item.Price.ToString("N0") VNĐ</span>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-outline-luxury w-100 py-2 small" style="font-size: 0.8rem;" onclick="event.preventDefault(); addToCartAjax(@item.Id, 1)">Thêm Vào Giỏ</button>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="mt-5 mb-5 fade-in-up" style="animation-delay: 0.2s;">
+        <ul class="pagination justify-content-center">
+
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)&minPrice=@ViewBag.MinPrice&maxPrice=@ViewBag.MaxPrice&grade=@ViewBag.Grade&sortOrder=@ViewBag.SortOrder">Trang Trước</a>
+                </li>
+            }
+
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="?page=@i&minPrice=@ViewBag.MinPrice&maxPrice=@ViewBag.MaxPrice&grade=@ViewBag.Grade&sortOrder=@ViewBag.SortOrder">@i</a>
+                </li>
+            }
+
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)&minPrice=@ViewBag.MinPrice&maxPrice=@ViewBag.MaxPrice&grade=@ViewBag.Grade&sortOrder=@ViewBag.SortOrder">Trang Sau</a>
+                </li>
+            }
+
+        </ul>
+    </nav>
+}
+else
+{
+    <div class="container text-center py-5 mt-4 bg-white rounded-0 shadow-sm border fade-in-up">
+        <i class="bi bi-box-seam mb-3 d-block" style="font-size: 3rem; color: var(--luxury-gold);"></i>
+        <h4 class="text-muted mb-4 font-serif">Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.</h4>
+        <a asp-action="Index" class="btn btn-luxury px-4 py-2">
+            <i class="bi bi-arrow-counterclockwise me-2"></i> Xóa bộ lọc và thử lại
+        </a>
+    </div>
+}

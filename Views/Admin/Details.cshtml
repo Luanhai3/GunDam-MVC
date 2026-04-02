@@ -1,0 +1,39 @@
+@model GunDammvc.Models.Product
+@{
+    ViewData["Title"] = "Chi Tiết Sản Phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5 fade-in-up">
+    <h2 class="mb-4 font-serif">Chi Tiết Sản Phẩm</h2>
+    <div class="card shadow-sm p-5 border-0" style="border-radius: 2px;">
+        <dl class="row">
+            <dt class="col-sm-3 text-muted">@Html.DisplayNameFor(model => model.Name)</dt>
+            <dd class="col-sm-9 fw-bold">@Html.DisplayFor(model => model.Name)</dd>
+
+            <dt class="col-sm-3 text-muted mt-3">@Html.DisplayNameFor(model => model.Grade)</dt>
+            <dd class="col-sm-9 mt-3">@Html.DisplayFor(model => model.Grade)</dd>
+
+            <dt class="col-sm-3 text-muted mt-3">@Html.DisplayNameFor(model => model.Price)</dt>
+            <dd class="col-sm-9 mt-3" style="color: var(--luxury-gold);">@Model.Price.ToString("N0") VNĐ</dd>
+
+            <dt class="col-sm-3 text-muted mt-3">@Html.DisplayNameFor(model => model.Stock)</dt>
+            <dd class="col-sm-9 mt-3">@Html.DisplayFor(model => model.Stock)</dd>
+
+            <dt class="col-sm-3 text-muted mt-3">@Html.DisplayNameFor(model => model.Description)</dt>
+            <dd class="col-sm-9 mt-3">@Html.DisplayFor(model => model.Description)</dd>
+
+            <dt class="col-sm-3 text-muted mt-3">@Html.DisplayNameFor(model => model.ImageUrl)</dt>
+            <dd class="col-sm-9 mt-3">
+                @if(!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" class="border p-2" style="max-width: 250px; border-radius: 2px;" />
+                }
+            </dd>
+        </dl>
+        <div class="mt-4 pt-3 border-top">
+            <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-luxury px-4">Sửa Thông Tin</a>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-2 rounded-0">Quay lại danh sách</a>
+        </div>
+    </div>
+</div>

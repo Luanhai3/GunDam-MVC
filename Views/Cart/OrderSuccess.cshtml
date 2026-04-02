@@ -1,0 +1,145 @@
+@model GunDammvc.Models.Order
+@{
+    ViewData["Title"] = "Đặt Hàng Thành Công";
+}
+
+<style>
+    .success-container {
+        min-height: 75vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .check-icon {
+        font-size: 80px;
+        color: #c4a76a; /* Luxury gold */
+        animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        transform: scale(0);
+    }
+
+    @@keyframes popIn {
+        0% { transform: scale(0); }
+        100% { transform: scale(1); }
+    }
+
+    /* CSS thiết kế riêng dùng khi in hóa đơn */
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+        #print-invoice, #print-invoice * {
+            visibility: visible;
+        }
+        #print-invoice {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="container success-container fade-in-up">
+    <i class="bi bi-check-circle-fill check-icon mb-3"></i>
+    <h1 class="serif mb-3">Đặt Hàng Thành Công!</h1>
+
+    @if (Model != null)
+    {
+        <p class="text-muted fs-5 mb-2">
+            Mã đơn hàng của bạn là: <strong class="text-dark">#@Model.OrderId</strong>
+        </p>
+        <p class="text-muted mb-4" style="max-width: 600px;">
+            Cảm ơn bạn đã lựa chọn GunDam MVC. Đơn hàng của bạn đang được xử lý và sẽ sớm được vận chuyển.
+        </p>
+        <div class="d-flex gap-3 justify-content-center mt-3">
+            <button onclick="window.print()" class="btn btn-outline-luxury">
+                <i class="bi bi-printer me-2"></i> In Hóa Đơn
+            </button>
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-luxury">
+                Tiếp Tục Khám Phá
+            </a>
+        </div>
+
+        <!-- Khu vực in hóa đơn (Sẽ bị ẩn trên giao diện web, chỉ hiện trên tờ giấy in ra) -->
+        <div id="print-invoice" class="d-none d-print-block mt-5 pt-5 w-100">
+            <div class="text-center mb-4">
+                <h2 class="font-serif">HÓA ĐƠN MUA HÀNG</h2>
+                <p class="text-muted">GunDam MVC - Sự Chính Xác Vượt Thời Gian</p>
+            </div>
+            
+            <div class="row mb-5">
+                <div class="col-6">
+                    <h6 class="font-serif fw-bold border-bottom pb-2 mb-3">Thông Tin Đơn Hàng</h6>
+                    <p class="mb-1"><strong>Mã Đơn Hàng:</strong> #@Model.OrderId</p>
+                    <p class="mb-1"><strong>Ngày Đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p class="mb-1"><strong>Trạng Thái:</strong> @(Model.Status == "Paid" ? "Đã Thanh Toán" : "Chờ Xử Lý")</p>
+                </div>
+                <div class="col-6">
+                    <h6 class="font-serif fw-bold border-bottom pb-2 mb-3">Thông Tin Giao Hàng</h6>
+                    <p class="mb-1"><strong>Người Nhận:</strong> @Model.FirstName @Model.LastName</p>
+                    <p class="mb-1"><strong>Số Điện Thoại:</strong> @Model.PhoneNumber</p>
+                    <p class="mb-1"><strong>Địa Chỉ:</strong> @Model.AddressLine1 @(!string.IsNullOrEmpty(Model.City) ? ", " + Model.City : "")</p>
+                </div>
+            </div>
+
+            <table class="table table-bordered border-dark">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+                            <td class="text-end">@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end text-uppercase">Tổng cộng:</th>
+                        <th class="text-end fs-5">@Model.OrderItems.Sum(i => i.UnitPrice * i.Quantity).ToString("N0") đ</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="text-center mt-5 pt-4 border-top">
+                <p class="font-serif fst-italic">Cảm ơn quý khách đã tin tưởng và mua sắm tại GunDam MVC!</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted fs-5 mb-4" style="max-width: 600px;">
+            Cảm ơn bạn đã lựa chọn GunDam MVC. Đơn hàng của bạn đang được xử lý và sẽ sớm được vận chuyển đến bạn.
+        </p>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-luxury">
+            Tiếp Tục Mua Sắm
+        </a>
+    }
+</div>
+
+@section Scripts {
+    <!-- Load script tạo hiệu ứng pháo giấy -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            // Bắn pháo giấy từ 2 góc trang
+            confetti(Object.assign({}, defaults, { particleCount: 150, origin: { x: 0.2, y: 0.8 } }));
+            confetti(Object.assign({}, defaults, { particleCount: 150, origin: { x: 0.8, y: 0.8 } }));
+        });
+    </script>
+}

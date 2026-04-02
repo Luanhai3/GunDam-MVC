@@ -1,0 +1,106 @@
+@model GunDammvc.Models.ShoppingCart
+@{
+    ViewData["Title"] = "Giỏ Hàng";
+}
+
+<style>
+    .cart-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .cart-item-img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 2px;
+    }
+    .table-luxury th {
+        border-bottom: 2px solid var(--border-color);
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        padding-bottom: 15px;
+    }
+    .table-luxury td {
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        padding: 20px 0;
+    }
+    .qty-input {
+        border: 1px solid var(--border-color);
+        border-radius: 0;
+        width: 60px !important;
+        text-align: center;
+        padding: 5px;
+    }
+</style>
+
+<div class="container py-5 cart-container fade-in-up">
+    <h2 class="serif mb-4 text-center">Giỏ Hàng Của Bạn</h2>
+
+    @if (Model == null || !Model.CartItems.Any())
+    {
+        <div class="text-center py-5 bg-white shadow-sm border" style="border-radius: 2px;">
+            <i class="bi bi-cart-x fs-1 text-muted mb-3"></i>
+            <p class="text-muted fs-5">Giỏ hàng của bạn đang trống.</p>
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-luxury mt-3">Tiếp Tục Mua Sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm bg-white p-5 border" style="border-radius: 2px;">
+            <table class="table table-luxury mb-0">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Đơn giá</th>
+                        <th>Số lượng</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.CartItems)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="@(string.IsNullOrEmpty(item.Product.ImageUrl) ? $"https://via.placeholder.com/80/FDFBF7/B89B5E?text={item.Product.Grade}" : item.Product.ImageUrl)" class="cart-item-img me-4 border" alt="@item.Product.Name" />
+                                    <div>
+                                        <h6 class="mb-0 font-serif">@item.Product.Name</h6>
+                                        <small class="text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.75rem;">Grade: @item.Product.Grade</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@item.Product.Price.ToString("N0") đ</td>
+                            <td>
+                                <form asp-action="UpdateQuantity" method="post" class="d-flex">
+                                    <input type="hidden" name="cartItemId" value="@item.Id" />
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1" class="form-control shadow-none qty-input" onchange="this.form.submit()" />
+                                </form>
+                            </td>
+                            <td class="fw-bold text-end" style="color: var(--luxury-gold);">@((item.Product.Price * item.Quantity).ToString("N0")) đ</td>
+                            <td class="text-end">
+                                <form asp-action="Remove" method="post">
+                                    <input type="hidden" name="cartItemId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-link text-muted p-0 shadow-none"><i class="bi bi-x-lg fs-5"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            <div class="d-flex justify-content-between align-items-center mt-5 pt-3">
+                <a asp-controller="Shop" asp-action="Index" class="text-decoration-none text-muted text-uppercase small" style="letter-spacing: 1px;"><i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm</a>
+                <div class="text-end">
+                    <p class="mb-1 text-muted text-uppercase small" style="letter-spacing: 1px;">Tổng cộng</p>
+                    <h3 class="font-serif text-dark mb-3">@Model.CartItems.Sum(i => i.Product.Price * i.Quantity).ToString("N0") VNĐ</h3>
+                    <a asp-action="Checkout" class="btn btn-luxury px-5 py-3">Tiến Hành Thanh Toán</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

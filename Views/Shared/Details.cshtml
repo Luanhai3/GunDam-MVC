@@ -1,0 +1,264 @@
+@model GunDammvc.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+    var relatedProducts = ViewBag.RelatedProducts as List<GunDammvc.Models.Product>;
+}
+
+<style>
+    .details-section {
+        padding: 60px 0;
+        background: #fff;
+    }
+    .product-gallery .main-image {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        transition: transform 0.3s;
+    }
+    .product-gallery .main-image:hover {
+        transform: scale(1.02);
+    }
+    .product-info .product-grade {
+        display: inline-block;
+        background: #f4f3ef;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .product-info .product-title {
+        font-family: "Playfair Display", serif;
+        font-size: 36px;
+        margin: 15px 0;
+    }
+    .product-info .product-price {
+        font-size: 28px;
+        font-weight: 500;
+        color: #c4a76a;
+        margin-bottom: 20px;
+    }
+    .product-info .product-description {
+        color: #666;
+        line-height: 1.8;
+        font-size: 15px;
+    }
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: fit-content;
+    }
+    .quantity-selector button {
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        padding: 8px 15px;
+        cursor: pointer;
+    }
+    .quantity-selector input {
+        width: 50px;
+        text-align: center;
+        border: none;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+        padding: 8px 0;
+    }
+    .quantity-selector input:focus {
+        outline: none;
+    }
+    .btn-add-to-cart {
+        background: #1c1c1c;
+        color: #fff;
+        border: none;
+        padding: 14px 30px;
+        font-size: 16px;
+        border-radius: 4px;
+        transition: 0.3s;
+        width: 100%;
+    }
+    .btn-add-to-cart:hover {
+        background: #c4a76a;
+    }
+    .product-tabs {
+        border-top: 1px solid #eee;
+        margin-top: 60px;
+        padding-top: 40px;
+    }
+    .nav-tabs .nav-link {
+        border: none;
+        color: #666;
+        font-weight: 500;
+        padding: 10px 20px;
+    }
+    .nav-tabs .nav-link.active {
+        color: #1c1c1c;
+        border-bottom: 2px solid #c4a76a;
+    }
+    .tab-content {
+        padding: 30px 0;
+        color: #555;
+        line-height: 1.9;
+    }
+    .related-products-section {
+        background: #f9f9f9;
+        padding: 80px 0;
+    }
+    .product-card {
+        background: #fff;
+        border-radius: 6px;
+        overflow: hidden;
+        text-align: center;
+        transition: 0.4s;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+    }
+    .product-card:hover {
+        transform: translateY(-8px);
+    }
+    .product-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    .product-card-body {
+        padding: 20px;
+    }
+    .product-card-title {
+        font-family: "Playfair Display", serif;
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    .product-card-price {
+        color: #c4a76a;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container details-section">
+    <div class="row g-5">
+        <!-- Product Gallery -->
+        <div class="col-lg-6">
+            <div class="product-gallery">
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/500x500" : Model.ImageUrl)" alt="@Model.Name" class="main-image" id="mainProductImage">
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="product-info">
+                <span class="product-grade">@Model.Grade</span>
+                <h1 class="product-title">@Model.Name</h1>
+                <div class="product-price">@Model.Price.ToString("N0") VNĐ</div>
+                <p class="product-description">@Model.Description</p>
+
+                <div class="d-flex align-items-center gap-3 my-4">
+                    <div class="quantity-selector">
+                        <button id="decrease-quantity">-</button>
+                        <input type="text" id="quantity-input" value="1" min="1" readonly>
+                        <button id="increase-quantity">+</button>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn-add-to-cart" onclick="handleAddToCart()">
+                    <i class="bi bi-cart-plus-fill me-2"></i>Thêm vào giỏ hàng
+                </button>
+
+                <div class="mt-4 pt-3 border-top">
+                    <p class="small text-muted mb-1"><strong>Mã sản phẩm:</strong> SP-@Model.Id.ToString("D5")</p>
+                    <p class="small text-muted mb-1"><strong>Tình trạng:</strong> <span class="text-success">Còn hàng (@Model.Stock)</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Info Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="product-tabs">
+                <ul class="nav nav-tabs" id="productTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">Mô Tả Chi Tiết</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab" aria-controls="specs" aria-selected="false">Thông Số</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="productTabContent">
+                    <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+                        Đây là nơi để mô tả chi tiết hơn về sản phẩm, câu chuyện đằng sau nó, hoặc các đặc điểm nổi bật. Nội dung này có thể được lấy từ một trường dữ liệu khác trong Model của bạn.
+                        <br><br>
+                        Ví dụ: Mẫu @Model.Name thuộc dòng @Model.Grade là một kiệt tác về kỹ thuật và thiết kế, mang lại trải nghiệm lắp ráp tuyệt vời cho cả người mới và người chơi lâu năm.
+                    </div>
+                    <div class="tab-pane fade" id="specs" role="tabpanel" aria-labelledby="specs-tab">
+                        <ul class="list-unstyled">
+                            <li><strong>Tỷ lệ:</strong> 1/144</li>
+                            <li><strong>Dòng:</strong> @Model.Grade</li>
+                            <li><strong>Chiều cao:</strong> ~13cm</li>
+                            <li><strong>Vật liệu:</strong> Nhựa PS, ABS, PE</li>
+                            <li><strong>Phụ kiện:</strong> Bao gồm vũ khí, decal, và sách hướng dẫn.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (relatedProducts != null && relatedProducts.Any())
+{
+    <section class="related-products-section">
+        <div class="container">
+            <h2 class="serif text-center mb-5">Sản Phẩm Liên Quan</h2>
+            <div class="row g-4">
+                @foreach (var related in relatedProducts)
+                {
+                    <div class="col-md-6 col-lg-3">
+                        <div class="product-card">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@related.Id">
+                                <img src="@(string.IsNullOrEmpty(related.ImageUrl) ? "https://via.placeholder.com/300x200" : related.ImageUrl)" alt="@related.Name">
+                            </a>
+                            <div class="product-card-body">
+                                <h3 class="product-card-title">@related.Name</h3>
+                                <p class="product-card-price">@related.Price.ToString("N0") VNĐ</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantityInput = document.getElementById('quantity-input');
+        const decreaseBtn = document.getElementById('decrease-quantity');
+        const increaseBtn = document.getElementById('increase-quantity');
+
+        decreaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+
+        increaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(quantityInput.value);
+            quantityInput.value = currentValue + 1;
+        });
+    });
+
+    function handleAddToCart() {
+        const quantity = parseInt(document.getElementById('quantity-input').value);
+        const productId = @Model.Id;
+        addToCartAjax(productId, quantity);
+    }
+</script>
+}

@@ -1,0 +1,188 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<style>
+    .auth-wrapper {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 15px;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 1000px;
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.03);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* LEFT IMAGE */
+    .auth-image {
+        background: url('https://images.unsplash.com/photo-1589330694653-0618ce5ebce3?q=80&w=1400') center/cover;
+        position: relative;
+    }
+
+    .auth-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+    }
+
+    .auth-image-text {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        color: #fff;
+        z-index: 2;
+    }
+
+    .auth-image-text h2 {
+        font-size: 28px;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+    }
+
+    .auth-image-text p {
+        font-weight: 300;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+
+    /* FORM */
+    .auth-form {
+        padding: 60px 50px;
+        animation: fadeUp 0.8s ease forwards;
+    }
+
+    .auth-title {
+        font-size: 30px;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+    }
+
+    .auth-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .form-control-auth {
+        border-radius: 2px;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        font-size: 14px;
+        background: #fafafa;
+    }
+
+    .form-control-auth:focus {
+        border-color: var(--luxury-gold);
+        background: #fff;
+        box-shadow: none;
+    }
+
+    @@keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 768px) {
+        .auth-card {
+            grid-template-columns: 1fr;
+        }
+        .auth-image {
+            height: 250px;
+        }
+    }
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- LEFT -->
+        <div class="auth-image">
+            <div class="auth-image-text font-serif">
+                <h2>Chào mừng trở lại</h2>
+                <p>Khám phá thế giới cơ khí đỉnh cao.</p>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="auth-form">
+
+            <h1 class="auth-title font-serif">Đăng Nhập</h1>
+            <p class="auth-subtitle">Đăng nhập vào tài khoản của bạn</p>
+
+            <form id="account" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-4">
+                    <label asp-for="Input.Email" class="form-label small text-muted text-uppercase" style="letter-spacing: 1px;">Email</label>
+                    <input asp-for="Input.Email" class="form-control form-control-auth shadow-none" autocomplete="username" aria-required="true" placeholder="name@email.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label small text-muted text-uppercase" style="letter-spacing: 1px;">Mật khẩu</label>
+                    <input asp-for="Input.Password" class="form-control form-control-auth shadow-none" autocomplete="current-password" aria-required="true" placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input shadow-none rounded-0" asp-for="Input.RememberMe" />
+                        <label class="form-check-label small text-muted" asp-for="Input.RememberMe">Ghi nhớ tôi</label>
+                    </div>
+                    <a id="forgot-password" asp-page="./ForgotPassword" class="small text-decoration-none" style="color: var(--luxury-gold);">Quên mật khẩu?</a>
+                </div>
+
+                <button id="login-submit" type="submit" class="btn btn-luxury w-100 mt-2 py-2">
+                    Đăng Nhập
+                </button>
+
+                <div class="mt-4 text-center">
+                    <p class="text-muted small">
+                        Chưa có tài khoản?
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none ms-1 fw-bold" style="color: var(--text-primary);">
+                            Đăng ký ngay
+                        </a>
+                    </p>
+                </div>
+            </form>
+
+            <!-- External Logins (If any) -->
+            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+            {
+                <hr class="my-4" />
+                <p class="text-muted small text-center mb-3 text-uppercase" style="letter-spacing: 1px;">Hoặc tiếp tục với</p>
+
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div class="d-grid gap-2">
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit" class="btn btn-outline-luxury py-2" name="provider" value="@provider.Name" title="Đăng nhập bằng tài khoản @provider.DisplayName">
+                                <i class="bi bi-@provider.DisplayName.ToLower() me-2"></i> @provider.DisplayName
+                            </button>
+                        }
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

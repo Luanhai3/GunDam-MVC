@@ -1,0 +1,274 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Bộ Sưu Tập";
+}
+
+<style>
+    body {
+        background: #f4f3ef;
+        font-family: "Segoe UI", sans-serif;
+        color: #2b2b2b;
+        scroll-behavior: smooth;
+    }
+
+    .serif {
+        font-family: "Playfair Display", serif;
+        letter-spacing: 0.5px;
+    }
+
+    /* HERO */
+    .hero {
+        height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background:
+            linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+            url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1600') center/cover;
+        color: #fff;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+        font-weight: 500;
+    }
+
+    .hero p {
+        color: #ddd;
+        max-width: 600px;
+        margin: 15px auto 0;
+    }
+
+    /* SECTION */
+    .section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 100px 20px;
+    }
+
+    /* GRID */
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: 0.4s;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+
+    .card:hover {
+        transform: translateY(-10px) scale(1.02);
+    }
+
+    .card img {
+        width: 100%;
+        height: 230px;
+        object-fit: cover;
+        transition: 0.5s;
+    }
+
+    .card:hover img {
+        transform: scale(1.08);
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-title {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .card-desc {
+        font-size: 14px;
+        color: #666;
+    }
+
+    /* FEATURE SECTION */
+    .feature {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+    }
+
+    .feature img {
+        width: 100%;
+        border-radius: 6px;
+        transition: 0.4s;
+    }
+
+    .feature img:hover {
+        transform: scale(1.03);
+    }
+
+    .divider {
+        width: 60px;
+        height: 1px;
+        background: #bbb;
+        margin: 20px 0;
+    }
+
+    .text-muted {
+        color: #666;
+        line-height: 1.9;
+    }
+
+    /* QUOTE */
+    .quote {
+        text-align: center;
+        font-style: italic;
+        font-size: 20px;
+        color: #555;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    /* CTA */
+    .cta {
+        background: #1c1c1c;
+        color: #fff;
+        text-align: center;
+        padding: 100px 20px;
+    }
+
+    .btn-elegant {
+        margin-top: 20px;
+        display: inline-block;
+        padding: 12px 30px;
+        background: #c4a76a;
+        color: #fff;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .btn-elegant:hover {
+        background: #a88d54;
+    }
+
+    /* ANIMATION */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: 0.8s ease;
+    }
+
+    .fade-in.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @@media (max-width: 768px) {
+        .grid-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .feature {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+    <div>
+        <h1 class="serif">Bộ Sưu Tập</h1>
+        <p>
+            Mỗi dòng Gunpla là một triết lý thiết kế khác nhau, từ đơn giản đến cơ khí phức tạp.
+        </p>
+    </div>
+</section>
+
+<!-- COLLECTION -->
+<section class="section fade-in">
+    <div class="grid-3">
+
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=800">
+            <div class="card-body">
+                <div class="card-title">High Grade (HG)</div>
+                <div class="card-desc">
+                    Đơn giản, linh hoạt, phù hợp cho người mới nhưng vẫn đầy tính thẩm mỹ.
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1626450429795-a3ba2964ef7f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGd1bmRhbXxlbnwwfHwwfHx8MA%3D%3D">
+            <div class="card-body">
+                <div class="card-title">Real Grade (RG)</div>
+                <div class="card-desc">
+                    Kích thước nhỏ nhưng chi tiết phức tạp, mang lại trải nghiệm lắp ráp tinh xảo.
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1631791440984-dfad1c779742?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGd1bmRhbXxlbnwwfHwwfHx8MA%3D%3D">
+            <div class="card-body">
+                <div class="card-title">Master Grade (MG)</div>
+                <div class="card-desc">
+                    Cấu trúc cơ khí hoàn chỉnh, dành cho người chơi nâng cao.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- FEATURE STORY -->
+<section class="section feature fade-in">
+    <img src="https://images.unsplash.com/photo-1577978924027-8657e5e9cfe3?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGd1bmRhbXxlbnwwfHwwfHx8MA%3D%3D">
+
+    <div>
+        <h2 class="serif">Nghệ Thuật & Kỹ Thuật</h2>
+        <div class="divider"></div>
+
+        <p class="text-muted">
+            Mỗi bộ Gundam không chỉ là một sản phẩm, mà là một hành trình khám phá.
+            Từng chi tiết nhỏ đều được thiết kế với sự chính xác cao, mang lại cảm giác như đang xây dựng một cỗ máy thực thụ.
+        </p>
+
+        <p class="text-muted">
+            Chúng tôi tin rằng vẻ đẹp nằm ở sự cân bằng giữa thiết kế và chức năng.
+        </p>
+    </div>
+</section>
+
+<!-- QUOTE -->
+<section class="section fade-in">
+    <p class="quote">
+        “Sự hoàn hảo không phải là thêm vào, mà là khi không còn gì để bỏ đi.”
+    </p>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <h2 class="serif">Khám Phá Bộ Sưu Tập</h2>
+    <a href="/Products" class="btn-elegant">
+        Xem Sản Phẩm
+    </a>
+</section>
+
+@section Scripts {
+<script>
+    const elements = document.querySelectorAll('.fade-in');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting){
+                entry.target.classList.add('show');
+            }
+        });
+    });
+
+    elements.forEach(el => observer.observe(el));
+</script>
+}

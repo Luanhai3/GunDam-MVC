@@ -1,0 +1,93 @@
+@{
+    ViewData["Title"] = "Dashboard Thống Kê";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var revenueData = ViewBag.MonthlyRevenue as decimal[];
+    var ordersData = ViewBag.MonthlyOrders as int[];
+}
+
+<div class="container py-5 fade-in-up">
+    <h2 class="font-serif mb-5 text-center text-uppercase" style="letter-spacing: 2px;">Báo Cáo Doanh Thu Năm @ViewBag.CurrentYear</h2>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="bg-white p-5 border shadow-sm text-center" style="border-radius: 2px;">
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px;">Tổng Doanh Thu</h6>
+                <h2 class="font-serif fw-bold mb-0" style="color: var(--luxury-gold);">@((revenueData?.Sum() ?? 0).ToString("N0")) VNĐ</h2>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="bg-white p-5 border shadow-sm text-center" style="border-radius: 2px;">
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px;">Đơn Hàng Thành Công</h6>
+                <h2 class="font-serif fw-bold mb-0 text-dark">@(ordersData?.Sum() ?? 0) Đơn</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
+        <h5 class="font-serif mb-4 text-center">Biểu Đồ Thống Kê Theo Tháng</h5>
+        <canvas id="revenueChart" height="100"></canvas>
+    </div>
+    
+    <div class="text-center mt-5 pt-4 border-top">
+        <a asp-action="Orders" class="btn btn-luxury px-4 py-2 me-2">Quản Lý Đơn Hàng</a>
+        <a asp-action="Index" class="btn btn-outline-luxury px-4 py-2">Quản Lý Sản Phẩm</a>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Nhúng thư viện Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                data: {
+                    labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                    datasets: [
+                        {
+                            type: 'bar', // Biểu đồ dạng cột cho Doanh thu
+                            label: 'Doanh thu (VNĐ)',
+                            data: @Html.Raw(Json.Serialize(revenueData)),
+                            backgroundColor: '#B89B5E',
+                            borderRadius: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line', // Biểu đồ dạng đường cho Số lượng đơn
+                            label: 'Số lượng đơn',
+                            data: @Html.Raw(Json.Serialize(ordersData)),
+                            backgroundColor: '#1A1A1A',
+                            borderColor: '#1A1A1A',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

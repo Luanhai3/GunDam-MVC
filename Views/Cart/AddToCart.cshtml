@@ -1,0 +1,142 @@
+@model GunDammvc.Models.ShoppingCart
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var product = ViewBag.AddedProduct as GunDammvc.Models.Product;
+}
+
+<style>
+    body {
+        background: #f6f6f6;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .success-container {
+        max-width: 1000px;
+        margin: 80px auto;
+        background: #fff;
+        border-radius: 14px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        animation: fadeIn 0.5s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .success-header h2 {
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .checkmark {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #2c2c2c;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin: 0 auto;
+    }
+
+    .product-box {
+        display: flex;
+        gap: 25px;
+        align-items: center;
+        margin-top: 30px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 10px;
+    }
+
+    .product-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .product-info h4 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .product-info span {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .actions {
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    .btn-main {
+        background: #2c2c2c;
+        color: #fff;
+        padding: 10px 25px;
+        border-radius: 6px;
+        text-decoration: none;
+        margin: 0 10px;
+        transition: 0.3s;
+    }
+
+    .btn-main:hover {
+        background: #000;
+        color: #fff;
+    }
+
+    .btn-outline {
+        border: 1px solid #2c2c2c;
+        padding: 10px 25px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #2c2c2c;
+        margin: 0 10px;
+    }
+
+    .btn-outline:hover {
+        background: #2c2c2c;
+        color: #fff;
+    }
+</style>
+
+<div class="success-container">
+
+    <!-- HEADER -->
+    <div class="success-header">
+        <div class="checkmark">✓</div>
+        <h2>Đã thêm vào giỏ hàng</h2>
+        <p style="color:#777">Sản phẩm của bạn đã sẵn sàng trong giỏ 🛒</p>
+    </div>
+
+    <!-- PRODUCT -->
+    @if (product != null)
+    {
+        <div class="product-box">
+            <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "https://via.placeholder.com/150" : product.ImageUrl)" class="product-img" />
+
+            <div class="product-info">
+                <h4>@product.Name</h4>
+                <span>Phân loại: @product.Grade</span><br />
+                <strong>@product.Price.ToString("N0") đ</strong>
+            </div>
+        </div>
+    }
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <a asp-controller="Cart" asp-action="Index" class="btn-main">Xem giỏ hàng</a>
+        <a asp-controller="Shop" asp-action="Index" class="btn-outline">Tiếp tục mua</a>
+    </div>
+
+</div>	

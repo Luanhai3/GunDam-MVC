@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Profile Settings";
+}
+
+<h4 class="font-serif mb-4">@ViewData["Title"]</h4>
+
+<div class="card border-0 bg-transparent">
+    <div class="card-body p-0">
+        <form asp-controller="Account" asp-action="Profile" method="post" class="w-100" style="max-width: 600px;">
+
+            <div class="mb-4">
+                <label for="Username" class="form-label text-uppercase letter-spacing-1 small fw-bold text-muted">Email Address</label>
+                <input id="Username" name="Username" type="email" class="form-control luxury-input py-3 text-muted" disabled />
+            </div>
+
+            <div class="mb-4">
+                <label for="FullName" class="form-label text-uppercase letter-spacing-1 small fw-bold text-muted">Full Name</label>
+                <input id="FullName" name="FullName" type="text" class="form-control luxury-input py-3" required />
+            </div>
+
+            <div class="mb-4">
+                <label for="PhoneNumber" class="form-label text-uppercase letter-spacing-1 small fw-bold text-muted">Phone Number</label>
+                <input id="PhoneNumber" name="PhoneNumber" type="tel" class="form-control luxury-input py-3" />
+            </div>
+
+            <div class="mt-5">
+                <button type="submit" class="btn btn-luxury py-3 px-5 fs-6 letter-spacing-1">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>

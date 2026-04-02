@@ -1,0 +1,166 @@
+@model GunDammvc.Models.ContactModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Liên hệ";
+}
+
+<style>
+    body {
+        background-color: #f7f7f7;
+        font-family: "Segoe UI", sans-serif;
+        color: #2b2b2b;
+    }
+
+    .wrapper {
+        max-width: 1100px;
+        margin: 80px auto;
+        padding: 0 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .header h1 {
+        font-weight: 500;
+    }
+
+    .header p {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+        background: #fff;
+        padding: 50px;
+        border-radius: 12px;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.04);
+    }
+
+    .form-control {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+        font-size: 14px;
+        background: transparent;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #000;
+    }
+
+    .btn-submit {
+        margin-top: 20px;
+        background: #2b2b2b;
+        color: #fff;
+        border: none;
+        padding: 10px 26px;
+        border-radius: 4px;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #000;
+    }
+
+    .success-msg {
+        background: #e6f4ea;
+        color: #2e7d32;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+
+    .info-block {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.8;
+    }
+
+    .divider {
+        height: 1px;
+        background: #eee;
+        margin: 25px 0;
+    }
+
+    @@media (max-width: 768px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+            padding: 30px;
+        }
+    }
+</style>
+
+<div class="wrapper">
+
+    <div class="header">
+        <h1>Liên hệ</h1>
+        <p>Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn</p>
+    </div>
+
+    <div class="contact-grid">
+
+        <!-- FORM -->
+        <div>
+
+            @if (ViewBag.Success != null)
+            {
+                <div class="success-msg">
+                    @ViewBag.Success
+                </div>
+            }
+
+            <form asp-controller="Contact" asp-action="Index" method="post">
+
+                <input asp-for="Name" class="form-control mb-3" placeholder="Họ và tên" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+
+                <input asp-for="Email" class="form-control mb-3" placeholder="Email" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+
+                <textarea asp-for="Message" class="form-control mb-3" rows="4" placeholder="Nội dung"></textarea>
+                <span asp-validation-for="Message" class="text-danger small"></span>
+
+                <button type="submit" class="btn-submit">
+                    Gửi liên hệ
+                </button>
+
+            </form>
+        </div>
+
+        <!-- INFO -->
+        <div class="info-block">
+            <strong>Studio</strong><br />
+            Gundam Boutique<br />
+            Vũng Tàu, Việt Nam
+
+            <div class="divider"></div>
+
+            <strong>Email</strong><br />
+            contact@gundamshop.com
+
+            <div class="divider"></div>
+
+            <strong>Điện thoại</strong><br />
+            +84 123 456 789
+
+            <div class="divider"></div>
+
+            <strong>Giờ làm việc</strong><br />
+            09:00 – 18:00 (Thứ 2 – Thứ 7)
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

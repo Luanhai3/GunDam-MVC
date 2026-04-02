@@ -1,0 +1,68 @@
+@model IEnumerable<GunDammvc.Models.Product>
+
+@{
+    ViewData["Title"] = "Quản Lý Sản Phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table-luxury th {
+        border-bottom: 2px solid var(--border-color);
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        padding-bottom: 15px;
+    }
+    .table-luxury td {
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        padding: 20px 0;
+    }
+</style>
+
+<div class="container py-5 fade-in-up">
+    <h2 class="font-serif mb-5 text-center text-uppercase" style="letter-spacing: 2px;">Quản Lý Sản Phẩm</h2>
+
+    <!-- Thanh điều hướng Admin -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a asp-action="Dashboard" class="btn btn-outline-luxury py-2 px-3 me-2">Xem Dashboard</a>
+            <a asp-action="Orders" class="btn btn-outline-luxury py-2 px-3">Quản Lý Đơn Hàng</a>
+        </div>
+        <a asp-action="Create" class="btn btn-luxury py-2 px-4">Thêm Sản Phẩm Mới</a>
+    </div>
+
+    <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
+        <div class="table-responsive">
+            <table class="table table-luxury mb-0">
+                <thead>
+                    <tr>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Cấp Độ</th>
+                        <th>Giá</th>
+                        <th>Tồn Kho</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="font-serif fw-bold">@item.Name</td>
+                            <td>@item.Grade</td>
+                            <td style="color: var(--luxury-gold);" class="fw-bold">@item.Price.ToString("N0") đ</td>
+                            <td>@item.Stock</td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-luxury px-3 py-1 me-1">Sửa</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-luxury px-3 py-1 me-1">Chi Tiết</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-luxury px-3 py-1">Xóa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

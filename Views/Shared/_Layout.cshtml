@@ -1,0 +1,246 @@
+@using Microsoft.AspNetCore.Identity
+@using GunDammvc.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IShoppingCartService ShoppingCartService
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GUNDAM MVC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/GunDammvc.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #FDFBF7;
+            --text-primary: #1A1A1A;
+            --text-secondary: #555555;
+            --luxury-gold: #B89B5E;
+            --border-color: #EAE8E3;
+        }
+        body {
+            background-color: var(--bg-color) !important;
+            color: var(--text-primary);
+            font-family: 'Jost', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-serif, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .btn-luxury {
+            background-color: var(--text-primary);
+            color: #fff;
+            border: 1px solid var(--text-primary);
+            padding: 12px 24px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            border-radius: 2px;
+        }
+        .btn-luxury:hover {
+            background-color: var(--luxury-gold);
+            border-color: var(--luxury-gold);
+            color: #fff;
+        }
+        .btn-outline-luxury {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--text-primary);
+            padding: 12px 24px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            border-radius: 2px;
+        }
+        .btn-outline-luxury:hover {
+            background-color: var(--text-primary);
+            color: #fff;
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+       @@keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .navbar {
+            background-color: #fff !important;
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+        }
+        .nav-link {
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            color: var(--text-primary) !important;
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: var(--luxury-gold) !important;
+        }
+        .footer-luxury {
+            background-color: #111;
+            color: #ccc;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand font-serif fs-4" asp-controller="Home" asp-action="Index" style="letter-spacing: 2px;">GUNDAM MVC</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Trang Chủ</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Shop" asp-action="Index">Cửa Hàng</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Collections" asp-action="Index">Bộ Sưu Tập</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Contact" asp-action="Index">Liên Hệ</a></li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Quản Trị Admin</a>
+                                <ul class="dropdown-menu shadow-sm border" aria-labelledby="adminDropdown" style="border-radius: 2px; border-color: var(--border-color) !important;">
+                                    <li><a class="dropdown-item py-2 text-uppercase small text-muted" style="letter-spacing: 1px;" asp-controller="Admin" asp-action="Dashboard">Dashboard Thống Kê</a></li>
+                                    <li><a class="dropdown-item py-2 text-uppercase small text-muted" style="letter-spacing: 1px;" asp-controller="Admin" asp-action="Index">Quản Lý Sản Phẩm</a></li>
+                                    <li><a class="dropdown-item py-2 text-uppercase small text-muted fw-bold text-dark" style="letter-spacing: 1px;" asp-controller="Admin" asp-action="Orders">Quản Lý Đơn Hàng</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <partial name="_LoginPartial" />
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <a href="#offcanvasCart" data-bs-toggle="offcanvas" role="button" aria-controls="offcanvasCart" class="nav-link ms-2 position-relative">
+                                <i class="bi bi-cart-fill fs-4"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @(await ShoppingCartService.GetCartItemCountAsync(User))
+                                </span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="footer-luxury pt-5 pb-4 mt-5">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+                <div class="col-md-4 col-lg-4 col-xl-4 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-serif fs-4" style="color: var(--luxury-gold); letter-spacing: 1px;">GunDam MVC</h5>
+                    <p>Cửa hàng mô hình Gundam chính hãng, mang đến những sản phẩm chất lượng cao cho người hâm mộ và nhà sưu tập.</p>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4" style="color: var(--luxury-gold); font-size: 0.9rem; letter-spacing: 1px;">Dòng Sản Phẩm</h5>
+                    <p><a asp-controller="Home" asp-action="Index" asp-route-grade="HG" class="text-white-50" style="text-decoration: none;">HG - High Grade</a></p>
+                    <p><a asp-controller="Home" asp-action="Index" asp-route-grade="RG" class="text-white-50" style="text-decoration: none;">RG - Real Grade</a></p>
+                    <p><a asp-controller="Home" asp-action="Index" asp-route-grade="MG" class="text-white-50" style="text-decoration: none;">MG - Master Grade</a></p>
+                    <p><a asp-controller="Home" asp-action="Index" asp-route-grade="PG" class="text-white-50" style="text-decoration: none;">PG - Perfect Grade</a></p>
+                </div>
+
+                <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4" style="color: var(--luxury-gold); font-size: 0.9rem; letter-spacing: 1px;">Liên Kết Hữu Ích</h5>
+                    <p><a asp-controller="Home" asp-action="Index" class="text-white-50" style="text-decoration: none;">Trang Chủ</a></p>
+                    <p><a asp-controller="Shop" asp-action="Index" class="text-white-50" style="text-decoration: none;">Cửa Hàng</a></p>
+                    <p><a asp-controller="Admin" asp-action="Index" class="text-white-50" style="text-decoration: none;">Quản Trị</a></p>
+                    <p><a asp-controller="Home" asp-action="Privacy" class="text-white-50" style="text-decoration: none;">Chính Sách Bảo Mật</a></p>
+                </div>
+
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4" style="color: var(--luxury-gold); font-size: 0.9rem; letter-spacing: 1px;">Liên hệ</h5>
+                    <p><i class="bi bi-geo-alt-fill me-3"></i>Quận 1, TP. Hồ Chí Minh, Việt Nam</p>
+                    <p><i class="bi bi-envelope-fill me-3"></i>hotro@gundammvc.com</p>
+                    <p><i class="bi bi-telephone-fill me-3"></i>+84 123 456 789</p>
+                </div>
+            </div>
+
+            <hr class="mb-4" style="border-color: #333;">
+
+            <div class="d-flex justify-content-between align-items-center flex-column flex-md-row">
+                <p class="mb-2 mb-md-0" style="font-size: 0.9rem;"> &copy; @DateTime.Now.Year - GunDam MVC | Design by Louis Hoang</p>
+                <div class="text-center">
+                    <a href="#" class="text-white me-3"><i class="bi bi-facebook fs-5"></i></a>
+                    <a href="#" class="text-white me-3"><i class="bi bi-twitter fs-5"></i></a>
+                    <a href="#" class="text-white me-3"><i class="bi bi-instagram fs-5"></i></a>
+                    <a href="#" class="text-white"><i class="bi bi-youtube fs-5"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Offcanvas Mini Cart -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title font-serif fw-bold" id="offcanvasCartLabel">Giỏ Hàng</h5>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0" id="miniCartBody">
+            <!-- Content will be loaded here via AJAX -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script type="text/javascript">
+            toastr.success('@TempData["SuccessMessage"]');
+        </script>
+    }
+
+    <!-- Script tải dữ liệu Mini Cart -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var offcanvasElement = document.getElementById('offcanvasCart');
+            if (offcanvasElement) {
+                offcanvasElement.addEventListener('show.bs.offcanvas', function () {
+                    $('#miniCartBody').html('<div class="d-flex justify-content-center mt-5"><div class="spinner-border text-secondary" role="status"></div></div>');
+                    $('#miniCartBody').load('/Cart/MiniCart');
+                });
+            }
+        });
+
+        // Hàm gọi AJAX thêm vào giỏ hàng và mở Mini Cart
+        function addToCartAjax(productId, quantity = 1) {
+            $.post('/Cart/AddAjax', { id: productId, quantity: quantity })
+                .done(function (data) {
+                    // Cập nhật nội dung HTML mới
+                    $('#miniCartBody').html(data);
+                    
+                    // Mở Offcanvas
+                    var offcanvasElement = document.getElementById('offcanvasCart');
+                    var bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+                    bsOffcanvas.show();
+                    
+                    toastr.success('Đã thêm sản phẩm vào giỏ hàng!');
+                })
+                .fail(function (xhr) {
+                    if(xhr.status === 401) toastr.error('Vui lòng đăng nhập để thêm sản phẩm.');
+                    else toastr.error('Có lỗi xảy ra, vui lòng thử lại.');
+                });
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
