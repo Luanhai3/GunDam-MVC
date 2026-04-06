@@ -1,3 +1,4 @@
+@model GunDammvc.Models.ShoppingCart
 @{
     ViewData["Title"] = "Thanh Toán";
 }
@@ -14,115 +15,287 @@
         background: #fafafa;
     }
     .form-control-checkout:focus {
-        background: #fff;
         border-color: var(--luxury-gold);
+        background: #fff;
         box-shadow: none;
+    }
+    .summary-item {
+        border-bottom: 1px dashed var(--border-color);
+        padding: 15px 0;
+    }
+    .summary-item:last-child {
+        border-bottom: none;
     }
 </style>
 
 <div class="container py-5 checkout-wrapper fade-in-up">
-    <h2 class="serif mb-4 text-center">Xác Nhận Đặt Hàng</h2>
+    <div class="text-center mb-5">
+        <h2 class="font-serif fw-bold text-uppercase" style="letter-spacing: 2px;">@ViewData["Title"]</h2>
+        <div style="width: 60px; height: 2px; background-color: var(--luxury-gold); margin: 15px auto;"></div>
+    </div>
 
     <div class="row g-5">
+
+        <!-- FORM -->
         <div class="col-lg-7">
-            <div class="bg-white p-5 shadow-sm border" style="border-radius: 2px;">
-                <h4 class="font-serif mb-4 pb-3 border-bottom">Thông Tin Giao Hàng</h4>
+            <div class="bg-white p-4 p-md-5 border shadow-sm" style="border-radius: 2px;">
+                <h5 class="font-serif fw-bold mb-4 text-uppercase" style="letter-spacing: 1px;">Thông Tin Giao Hàng</h5>
                 <form asp-action="PlaceOrder" method="post">
-                    <div class="mb-3">
-                        <label class="form-label text-muted small text-uppercase" style="letter-spacing: 1px;">Người nhận</label>
-                        <input type="text" name="FullName" class="form-control form-control-checkout shadow-none" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small text-uppercase" style="letter-spacing: 1px;">Số điện thoại</label>
-                        <input type="text" name="PhoneNumber" class="form-control form-control-checkout shadow-none" required />
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label text-muted small text-uppercase" style="letter-spacing: 1px;">Địa chỉ</label>
-                        <textarea name="Address" class="form-control form-control-checkout shadow-none" rows="3" required></textarea>
-                    </div>
-                    
-                    <h4 class="font-serif mb-4 pb-3 border-bottom mt-5">Phương Thức Thanh Toán</h4>
+
+                    <input name="FullName" class="form-control form-control-checkout shadow-none mb-3" placeholder="Họ và Tên" required />
+                    <input name="PhoneNumber" class="form-control form-control-checkout shadow-none mb-3" placeholder="Số điện thoại" required />
+                    <textarea name="Address" class="form-control form-control-checkout shadow-none mb-4" placeholder="Địa chỉ giao hàng chi tiết" rows="3" required></textarea>
+
+                    <h5 class="font-serif fw-bold mb-3 mt-4 text-uppercase" style="letter-spacing: 1px;">Phương Thức Thanh Toán</h5>
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="PaymentMethod" id="cod" value="COD" checked>
-                        <label class="form-check-label ms-2" for="cod">Thanh toán khi nhận hàng (COD)</label>
+                        <input class="form-check-input shadow-none" type="radio" name="PaymentMethod" id="payCOD" value="COD" checked />
+                        <label class="form-check-label" for="payCOD">Thanh toán khi nhận hàng (COD)</label>
                     </div>
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="PaymentMethod" id="bank" value="BankTransfer">
-                        <label class="form-check-label ms-2" for="bank">Chuyển khoản qua ngân hàng</label>
+                        <input class="form-check-input shadow-none" type="radio" name="PaymentMethod" id="payBank" value="BankTransfer" />
+                        <label class="form-check-label" for="payBank">Chuyển khoản ngân hàng</label>
                     </div>
+
+                    <div id="bank-info-box" class="alert alert-info border-0 rounded-0 mb-4" style="display:none; background-color: #f8f9fa; border-left: 4px solid var(--luxury-gold) !important;">
+                        <i class="bi bi-qr-code-scan me-2"></i><strong>Thanh toán qua chuyển khoản:</strong><br/>
+                        <span class="small text-muted mt-1 d-block">Mã QR và thông tin chuyển khoản chính xác sẽ được hiển thị ở bước tiếp theo sau khi bạn nhấn "Xác Nhận Đặt Hàng". Đơn hàng sẽ được xử lý ngay sau khi hệ thống nhận được thanh toán.</span>
+                    </div>
+
+                    <hr class="my-4" />
                     
-                    <!-- Box thông tin ngân hàng & QR Code (Ẩn mặc định) -->
-                    <div id="bank-info-box" class="mb-4 p-4 border fade-in-up" style="display: none; border-radius: 2px; background-color: var(--bg-color);">
-                        <div class="d-flex flex-column flex-sm-row align-items-center gap-4">
-                            <img src="https://img.vietqr.io/image/MB-0348699436-compact2.png?accountName=HOANG%20NGUYEN%20THIEN%20LUAN" alt="QR Code MB Bank" class="border shadow-sm bg-white p-2" style="width: 140px; height: 140px; border-radius: 2px;" />
-                            <div>
-                                <h6 class="font-serif mb-3 text-uppercase" style="color: var(--luxury-gold); letter-spacing: 1px;">Thông tin chuyển khoản</h6>
-                                <p class="mb-1 text-muted small text-uppercase" style="letter-spacing: 1px;">Ngân hàng: <strong class="text-dark">MB Bank</strong></p>
-                                <p class="mb-1 text-muted small text-uppercase" style="letter-spacing: 1px;">Chủ tài khoản: <strong class="text-dark">HOANG NGUYEN THIEN LUAN</strong></p>
-                                <p class="mb-2 text-muted small text-uppercase" style="letter-spacing: 1px;">Số tài khoản: <strong class="text-dark fs-6">0348699436</strong></p>
-                                <p class="mb-0 small text-muted" style="font-style: italic;">* Vui lòng ghi chú "SĐT hoặc Tên đặt hàng" khi chuyển khoản.</p>
-                            </div>
+                    <h6 class="fw-bold mb-3">Sử dụng điểm thưởng</h6>
+                    <div class="alert alert-light border mb-3 p-3" style="border-radius: 4px;">
+                        <h6 class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--text-primary);"><i class="bi bi-info-circle me-2"></i>Quy tắc tích & sử dụng điểm:</h6>
+                        <ul class="mb-0 small text-muted ps-3" style="line-height: 1.6;">
+                            <li class="mb-1"><strong>Tích điểm:</strong> Mỗi <strong>20.000 VNĐ</strong> thanh toán thành công = <strong>1 Điểm</strong>.</li>
+                            <li><strong>Sử dụng:</strong> Quy đổi <strong>1 Điểm</strong> = <strong>1.000 VNĐ</strong> giảm giá cho đơn hàng.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Bạn đang có: <strong style="color: var(--luxury-gold);">@ViewBag.AvailablePoints Điểm</strong></label>
+                        <div class="input-group">
+                            <input type="number" id="UsePoints" name="UsePoints" class="form-control form-control-checkout shadow-none border-end-0" placeholder="Nhập số điểm muốn sử dụng" min="0" max="@ViewBag.AvailablePoints" value="0" />
+                            <span class="input-group-text bg-white border-start-0" style="border-color: var(--border-color); color: var(--luxury-gold);">Điểm</span>
                         </div>
                     </div>
 
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="radio" name="PaymentMethod" id="vnpay" value="VNPay">
-                        <label class="form-check-label ms-2" for="vnpay">
-                            <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/9/06ncktiwd6dc1694418189687.png" alt="VNPay" height="24" class="me-2" />
-                            Thanh toán qua VNPay
-                        </label>
+                    <hr class="my-4" />
+                    <h6 class="fw-bold mb-3">Mã Giảm Giá (Coupon)</h6>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" id="CouponCode" name="CouponCode" class="form-control form-control-checkout shadow-none border-end-0" placeholder="Nhập mã (VD: GUNDAM50K)" />
+                            <button type="button" id="btnApplyCoupon" class="btn btn-luxury border-start-0 py-2 px-4" style="border-radius: 0 2px 2px 0;">Áp Dụng</button>
+                        </div>
+                        <small id="couponMessage" class="mt-1 d-none"></small>
                     </div>
 
-                    <button type="submit" class="btn btn-luxury w-100 py-3 mt-4">Hoàn Tất Đặt Hàng</button>
+                    <button class="btn btn-luxury py-3 mt-4 w-100 text-uppercase fw-bold" style="letter-spacing: 1px;">Xác Nhận Đặt Hàng</button>
                 </form>
             </div>
         </div>
 
+        <!-- SUMMARY -->
         <div class="col-lg-5">
-            <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
-                <h4 class="font-serif mb-4 pb-3 border-bottom">Tóm Tắt Đơn Hàng</h4>
-                @if (ViewBag.CartItems != null)
+            <div class="bg-white p-4 p-md-5 border shadow-sm sticky-top" style="border-radius: 2px; top: 100px;">
+                <h5 class="font-serif fw-bold mb-4 text-uppercase" style="letter-spacing: 1px;">Đơn Hàng Của Bạn</h5>
+
+                @if (Model?.CartItems != null)
                 {
                     decimal total = 0;
-                    foreach (var item in ViewBag.CartItems)
+
+                    foreach (var item in Model.CartItems)
                     {
-                        total += item.Product.Price * item.Quantity;
-                        <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                            <div>
-                                <h6 class="mb-1 font-serif">@item.Product.Name</h6>
-                                <small class="text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.75rem;">SL: @item.Quantity</small>
+                        decimal itemTotal = item.Product.Price * item.Quantity;
+                        total += itemTotal;
+
+                        <div class="summary-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="position-relative">
+                                    <img src="@(string.IsNullOrEmpty(item.Product.ImageUrl) ? "https://via.placeholder.com/60" : item.Product.ImageUrl)" alt="@item.Product.Name" style="width: 60px; height: 60px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border-color);" />
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style="font-size: 0.7rem;">@item.Quantity</span>
+                                </div>
+                                <span class="fw-medium text-dark" style="font-size: 0.95rem;">@item.Product.Name</span>
                             </div>
-                            <span class="fw-bold" style="color: var(--luxury-gold);">@((item.Product.Price * item.Quantity).ToString("N0")) đ</span>
+                            <span class="fw-bold text-dark">@itemTotal.ToString("N0") đ</span>
                         </div>
                     }
-                    <div class="d-flex justify-content-between mt-4 pt-2">
-                        <h6 class="text-uppercase text-muted" style="letter-spacing: 1px;">Tổng cộng:</h6>
-                        <h4 class="font-serif fw-bold mb-0" style="color: var(--luxury-gold);">@total.ToString("N0") VNĐ</h4>
+
+                    @* FIX CHUẨN *@
+                    decimal tierDiscountRate = 0m;
+                    if (ViewBag.TierDiscountRate != null)
+                    {
+                        tierDiscountRate = Convert.ToDecimal(ViewBag.TierDiscountRate);
+                    }
+
+                    decimal discount = total * tierDiscountRate;
+                    decimal finalTotal = total - discount;
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tạm tính</span>
+                        <span class="fw-medium">@total.ToString("N0") đ</span>
+                    </div>
+
+                    @if (discount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Ưu đãi hạng @ViewBag.MembershipTier</span>
+                            <span>-@discount.ToString("N0") đ</span>
+                        </div>
+                    }
+
+                    <div id="points-discount-row" class="d-flex justify-content-between mb-2 text-success" style="display: none !important;">
+                        <span>Sử dụng điểm</span>
+                        <span>-<span id="points-discount-amount">0</span> đ</span>
+                    </div>
+
+                    <div id="coupon-discount-row" class="d-flex justify-content-between mb-2 text-success" style="display: none !important;">
+                        <span>Mã giảm giá</span>
+                        <span>-<span id="coupon-discount-amount">0</span> đ</span>
+                    </div>
+
+                    <div id="shipping-fee-row" class="d-flex justify-content-between mb-2 text-danger" style="display: none !important;">
+                        <span>Phí vận chuyển</span>
+                        <span>+<span id="shipping-fee-amount">0</span> đ</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <strong class="text-uppercase" style="letter-spacing: 1px;">Tổng cộng</strong>
+                        <strong class="fs-4" style="color: var(--luxury-gold);"><span id="final-total" data-base-total="@finalTotal">@finalTotal.ToString("N0")</span> đ</strong>
                     </div>
                 }
+
             </div>
         </div>
+
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const radios = document.querySelectorAll('input[name="PaymentMethod"]');
-            const bankBox = document.getElementById('bank-info-box');
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const radios = document.querySelectorAll('input[name="PaymentMethod"]');
+    const bankBox = document.getElementById('bank-info-box');
 
-            function toggleBankBox() {
-                const selected = document.querySelector('input[name="PaymentMethod"]:checked');
-                if (selected && selected.value === 'BankTransfer') {
-                    bankBox.style.display = 'block';
-                } else {
-                    bankBox.style.display = 'none';
-                }
+    radios.forEach(r => {
+        r.addEventListener('change', () => {
+            bankBox.style.display =
+                document.querySelector('input[value="BankTransfer"]').checked
+                    ? 'block'
+                    : 'none';
+        });
+    });
+
+    // Logic tính điểm thưởng trực tiếp
+    const usePointsInput = document.getElementById('UsePoints');
+    const addressInput = document.querySelector('textarea[name="Address"]');
+    const pointsDiscountRow = document.getElementById('points-discount-row');
+    const pointsDiscountAmount = document.getElementById('points-discount-amount');
+    const couponInput = document.getElementById('CouponCode');
+    const btnApplyCoupon = document.getElementById('btnApplyCoupon');
+    const couponMessage = document.getElementById('couponMessage');
+    const couponDiscountRow = document.getElementById('coupon-discount-row');
+    const couponDiscountAmount = document.getElementById('coupon-discount-amount');
+    const shippingFeeRow = document.getElementById('shipping-fee-row');
+    const shippingFeeAmount = document.getElementById('shipping-fee-amount');
+    const finalTotalElement = document.getElementById('final-total');
+    let currentCouponDiscount = 0;
+
+    if (usePointsInput && finalTotalElement && addressInput) {
+        // Lấy tổng tiền cơ sở (đã trừ discount hạng thành viên)
+        const baseTotal = parseFloat(finalTotalElement.getAttribute('data-base-total')) || 0;
+        
+        function calculateTotal() {
+            let points = parseInt(usePointsInput.value) || 0;
+            const maxPoints = parseInt(usePointsInput.getAttribute('max')) || 0;
+            
+            // Giới hạn số điểm nhập vào không được vượt quá số điểm đang có
+            if (points < 0) points = 0;
+            if (points > maxPoints) points = maxPoints;
+            usePointsInput.value = points; // Cập nhật lại giá trị trên ô input nếu bị quá giới hạn
+
+            // Tính toán số tiền được giảm (1 điểm = 1000đ)
+            let pointsDiscount = points * 1000;
+            
+            // Hiển thị phần trừ tiền do dùng điểm
+            if (points > 0) {
+                pointsDiscountRow.style.setProperty('display', 'flex', 'important');
+                pointsDiscountAmount.textContent = pointsDiscount.toLocaleString('vi-VN');
+            } else {
+                pointsDiscountRow.style.setProperty('display', 'none', 'important');
             }
 
-            radios.forEach(radio => {
-                radio.addEventListener('change', toggleBankBox);
+            if (currentCouponDiscount > 0) {
+                couponDiscountRow.style.setProperty('display', 'flex', 'important');
+                couponDiscountAmount.textContent = currentCouponDiscount.toLocaleString('vi-VN');
+            } else {
+                couponDiscountRow.style.setProperty('display', 'none', 'important');
+            }
+
+            // Tính phí vận chuyển (Trung tâm Vũng Tàu)
+            let currentShippingFee = 0;
+            const address = addressInput.value.toLowerCase();
+            if (!address.trim()) {
+                currentShippingFee = 0;
+            } else if (address.includes('vũng tàu') || address.includes('vung tau')) {
+                currentShippingFee = 20000; // Nội thành Vũng Tàu
+            } else {
+                currentShippingFee = 40000; // Ngoại thành
+            }
+
+            if (currentShippingFee > 0) {
+                shippingFeeRow.style.setProperty('display', 'flex', 'important');
+                shippingFeeAmount.textContent = currentShippingFee.toLocaleString('vi-VN');
+            } else {
+                shippingFeeRow.style.setProperty('display', 'none', 'important');
+            }
+
+            // Cập nhật lại tổng tiền cuối cùng
+            let newTotal = baseTotal - pointsDiscount - currentCouponDiscount + currentShippingFee;
+            if (newTotal < 0) newTotal = 0; // Đảm bảo tổng tiền không bị âm
+            
+            finalTotalElement.textContent = newTotal.toLocaleString('vi-VN');
+        }
+
+        if (btnApplyCoupon) {
+            btnApplyCoupon.addEventListener('click', async function() {
+                const code = couponInput.value.trim().toUpperCase();
+                if (code === '') {
+                    currentCouponDiscount = 0;
+                    couponMessage.className = 'd-none';
+                    calculateTotal();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/Cart/CheckCoupon?code=${code}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        currentCouponDiscount = result.discountAmount;
+                        couponMessage.textContent = result.message;
+                        couponMessage.className = 'text-success mt-1 d-block small fw-bold';
+                    } else {
+                        currentCouponDiscount = 0;
+                        couponMessage.textContent = result.message;
+                        couponMessage.className = 'text-danger mt-1 d-block small';
+                    }
+                } catch (error) {
+                    currentCouponDiscount = 0;
+                    couponMessage.textContent = 'Lỗi kết nối khi kiểm tra mã.';
+                    couponMessage.className = 'text-danger mt-1 d-block small';
+                }
+                calculateTotal();
             });
-        });
-    </script>
+        }
+
+        usePointsInput.addEventListener('input', calculateTotal);
+        addressInput.addEventListener('input', calculateTotal);
+        
+        // Gọi 1 lần lúc mới load form để tính phí ship nếu trình duyệt tự điền địa chỉ
+        calculateTotal();
+    }
+});
+</script>
 }

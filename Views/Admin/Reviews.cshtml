@@ -1,0 +1,126 @@
+@model IEnumerable<GunDammvc.Models.Review>
+@{
+    ViewData["Title"] = "Quản Lý Đánh Giá";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table-luxury th {
+        border-bottom: 2px solid var(--border-color);
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        padding-bottom: 15px;
+    }
+    .table-luxury td {
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        padding: 15px 0;
+    }
+    .rating-stars {
+        color: #ffc107;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container py-5 fade-in-up">
+    <h2 class="font-serif mb-5 text-center text-uppercase" style="letter-spacing: 2px;">Quản Lý Đánh Giá</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <a asp-action="Dashboard" class="btn btn-outline-luxury py-2 px-3 me-2">Xem Dashboard</a>
+            <a asp-action="Index" class="btn btn-outline-luxury py-2 px-3 me-2">Quản Lý Sản Phẩm</a>
+            <a asp-action="Orders" class="btn btn-outline-luxury py-2 px-3">Quản Lý Đơn Hàng</a>
+        </div>
+        <form method="get" class="d-flex align-items-center m-0">
+            <div class="input-group" style="width: 310px;">
+                <input type="text" name="searchQuery" value="@ViewBag.SearchQuery" class="form-control shadow-none border-0 px-2" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent; font-size: 0.9rem;" placeholder="Sản phẩm, Email, Nội dung..." />
+                @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
+                {
+                    <a asp-action="Reviews" class="btn border-0 shadow-none px-2 text-danger" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent;" title="Xóa tìm kiếm"><i class="bi bi-x-lg"></i></a>
+                }
+                <button type="submit" class="btn border-0 shadow-none px-2 text-muted" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent;"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-luxury mb-0">
+                    <thead>
+                        <tr>
+                            <th>Sản Phẩm</th>
+                            <th>Người Dùng</th>
+                            <th class="text-center">Đánh Giá</th>
+                            <th style="width: 35%;">Nội Dung</th>
+                            <th>Thời Gian</th>
+                            <th class="text-end">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var review in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@review.Product?.Name</td>
+                                <td>@review.User?.Email</td>
+                                <td class="text-center rating-stars">
+                                    @for (int i = 0; i < review.Rating; i++)
+                                    {
+                                        <i class="bi bi-star-fill"></i>
+                                    }
+                                </td>
+                                <td>
+                                    <div style="max-height: 60px; overflow-y: auto; font-size: 0.9rem;" class="text-muted">
+                                        @review.Comment
+                                    </div>
+                                </td>
+                                <td class="text-muted small">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="text-end">
+                                    <form asp-controller="Admin" asp-action="DeleteReview" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không? Thao tác này không thể hoàn tác.');">
+                                        <input type="hidden" name="id" value="@review.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-1">Xóa</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-chat-square-text text-muted mb-3" style="font-size: 3rem;"></i>
+                <p class="text-muted fs-5">Chưa có đánh giá nào trong hệ thống.</p>
+            </div>
+        }
+
+        <!-- Phân Trang (Pagination) -->
+        <nav class="mt-4 pt-3 border-top fade-in-up">
+            <ul class="pagination justify-content-center mb-0">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link text-dark shadow-none" href="?page=@(ViewBag.CurrentPage - 1)&searchQuery=@ViewBag.SearchQuery">Trang Trước</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link @(i == ViewBag.CurrentPage ? "bg-dark border-dark text-white" : "text-dark") shadow-none" href="?page=@i&searchQuery=@ViewBag.SearchQuery">@i</a>
+                    </li>
+                }
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link text-dark shadow-none" href="?page=@(ViewBag.CurrentPage + 1)&searchQuery=@ViewBag.SearchQuery">Trang Sau</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>

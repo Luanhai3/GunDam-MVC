@@ -28,6 +28,14 @@ namespace GunDammvc.Controllers
                 return NotFound();
             }
             
+            // 🎯 Lấy danh sách sản phẩm liên quan (cùng Grade)
+            var relatedProducts = _context.Products
+                .Where(p => p.Grade == product.Grade && p.Id != product.Id)
+                .Take(4)
+                .ToList();
+                
+            ViewBag.RelatedProducts = relatedProducts;
+
             return View(product);
         }
     }

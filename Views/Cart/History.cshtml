@@ -1,46 +1,244 @@
 @model IEnumerable<GunDammvc.Models.Order>
 @{
-    ViewData["Title"] = "Lịch Sử Mua Hàng";
+    ViewData["Title"] = "Lịch Sử Đơn Hàng";
 }
 
 <style>
     .history-container {
-        max-width: 1000px;
-        margin: 0 auto;
+        padding: 60px 0;
+        min-height: 70vh;
     }
     .order-card {
-        border-radius: 2px;
-        border: 1px solid var(--border-color);
-        margin-bottom: 30px;
         background: #fff;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin-bottom: 40px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        transition: all 0.4s ease;
+    }
+    .order-card:hover {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transform: translateY(-3px);
     }
     .order-header {
-        background-color: #FDFBF7;
-        padding: 15px 20px;
+        background: #faf9f6;
+        padding: 20px 30px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .order-header-info span {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+    .order-header-info strong {
+        color: var(--text-primary);
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+    .status-badge {
+        padding: 8px 18px;
+        border-radius: 2px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+    .status-pending { background: #fff8e1; color: #9c7c00; border: 1px solid #ffeeba; }
+    .status-paid { background: #e8f5e9; color: #2e7d32; border: 1px solid #c3e6cb; }
+    .status-cancelled { background: #fbe9e7; color: #c62828; border: 1px solid #f5c6cb; }
+    
+    .order-body {
+        padding: 10px 30px;
+    }
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px dashed var(--border-color);
+    }
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    .item-img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #f0f0f0;
+    }
+    .item-details {
+        flex-grow: 1;
+        padding-left: 25px;
+    }
+    .item-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.25rem;
+        margin-bottom: 6px;
+        color: var(--text-primary);
+    }
+    .item-meta {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    .item-price {
+        font-weight: 500;
+        color: var(--luxury-gold);
+        font-size: 1.1rem;
+    }
+    .order-footer {
+        padding: 15px 30px;
+        background: #fff;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        background: #fff;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+    }
+    .empty-state i {
+        font-size: 65px;
+        color: var(--luxury-gold);
+        margin-bottom: 20px;
+        opacity: 0.8;
+    }
+
+    /* Progress Bar */
+    .order-progress {
+        padding: 30px 20px;
+        background: #fff;
         border-bottom: 1px solid var(--border-color);
     }
-    .order-body {
-        padding: 25px;
+    .stepper-wrapper {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 85%;
+        margin: 0 auto;
     }
-    .product-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 2px;
-        border: 1px solid var(--border-color);
+    .stepper-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        z-index: 1;
+    }
+    .stepper-item::before {
+        position: absolute;
+        content: "";
+        border-bottom: 2px solid #e0e0e0;
+        width: 100%;
+        top: 15px;
+        left: -50%;
+        z-index: -1;
+    }
+    .stepper-item::after {
+        position: absolute;
+        content: "";
+        border-bottom: 2px solid var(--luxury-gold);
+        width: 100%;
+        top: 15px;
+        left: -50%;
+        z-index: -1;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.5s ease;
+    }
+    .stepper-item:first-child::before,
+    .stepper-item:first-child::after {
+        content: none;
+    }
+    .stepper-item.completed::after {
+        transform: scaleX(1);
+    }
+    .stepper-item.cancelled-line::after {
+        border-bottom-color: #dc3545;
+        transform: scaleX(1);
+    }
+    .step-counter {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    .stepper-item.completed .step-counter {
+        background-color: var(--luxury-gold);
+        box-shadow: 0 0 10px rgba(184, 155, 94, 0.4);
+    }
+    .stepper-item.cancelled .step-counter {
+        background-color: #dc3545;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);
+    }
+    .step-name {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+    .stepper-item.completed .step-name {
+        color: var(--luxury-gold);
+        font-weight: 600;
+    }
+    .stepper-item.cancelled .step-name {
+        color: #dc3545;
+        font-weight: 600;
+    }
+    @@media (max-width: 768px) {
+        .stepper-wrapper { max-width: 100%; }
+        .step-name { font-size: 0.7rem; }
+    }
+
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+        .print-area, .print-area * {
+            visibility: visible;
+        }
+        .print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
     }
 </style>
 
-<div class="container py-5 history-container fade-in-up">
-    <h2 class="serif mb-4 text-center">Lịch Sử Mua Hàng</h2>
+<div class="container history-container fade-in-up">
+    <div class="text-center mb-5">
+        <h1 class="font-serif fw-bold text-uppercase" style="letter-spacing: 2px;">Lịch Sử Đơn Hàng</h1>
+        <div style="width: 60px; height: 2px; background-color: var(--luxury-gold); margin: 15px auto;"></div>
+    </div>
 
-    @if (Model == null || !Model.Any())
+    @if (!Model.Any())
     {
-        <div class="text-center py-5 bg-white border" style="border-radius: 2px;">
-            <i class="bi bi-clock-history text-muted mb-3" style="font-size: 3rem;"></i>
-            <p class="text-muted fs-5 mt-2">Bạn chưa có đơn hàng nào.</p>
-            <a asp-controller="Shop" asp-action="Index" class="btn btn-luxury mt-3">Bắt Đầu Mua Sắm</a>
+        <div class="empty-state">
+            <i class="bi bi-box2-heart"></i>
+            <h3 class="font-serif mb-3">Chưa Có Đơn Hàng Nào</h3>
+            <p class="text-muted mb-4">Bạn chưa thực hiện giao dịch nào. Hãy khám phá các mẫu Gunpla tuyệt đẹp và bắt đầu bộ sưu tập ngay hôm nay.</p>
+            <a asp-controller="Shop" asp-action="Index" class="btn-luxury text-decoration-none d-inline-block">Bắt Đầu Mua Sắm</a>
         </div>
     }
     else
@@ -48,66 +246,328 @@
         foreach (var order in Model)
         {
             <div class="order-card">
-                <div class="order-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="text-muted small d-block text-uppercase" style="letter-spacing: 1px;">Mã đơn hàng: #@order.OrderId</span>
-                        <div class="d-flex align-items-center mt-1">
-                            <span class="fw-bold me-2">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
-                            @if (order.Status == "Pending")
-                            {
-                                <span class="badge bg-warning text-dark rounded-1">Chờ Xử Lý</span>
-                            }
-                            else if (order.Status == "Cancelled")
-                            {
-                                <span class="badge bg-danger rounded-1">Đã Hủy</span>
-                            }
-                            else if (order.Status == "Paid")
-                            {
-                                <span class="badge bg-success rounded-1">Đã Thanh Toán</span>
-                            }
+                <div class="order-header">
+                    <div class="d-flex gap-5 flex-wrap">
+                        <div class="order-header-info">
+                            <span>Mã Đơn Hàng</span>
+                            <strong>#@order.OrderId</strong>
                         </div>
+                        <div class="order-header-info">
+                            <span>Ngày Đặt Hàng</span>
+                            <strong>@order.OrderDate.ToString("dd/MM/yyyy - HH:mm")</strong>
+                        </div>
+                        <div class="order-header-info">
+                            <span>Tổng Thanh Toán</span>
+                            <strong style="color: var(--luxury-gold); font-size: 1.15rem;">@order.OrderTotal.ToString("N0") VNĐ</strong>
+                        </div>
+                        @if (order.PointsUsed > 0)
+                        {
+                            <div class="order-header-info">
+                                <span>Điểm Đã Dùng</span>
+                                <strong class="text-success">-@order.PointsUsed Điểm (-@((order.PointsUsed * 1000).ToString("N0")) VNĐ)</strong>
+                            </div>
+                        }
                     </div>
-                    <div class="text-end">
-                        <span class="text-muted small d-block text-uppercase" style="letter-spacing: 1px;">Tổng tiền</span>
-                        <span class="fw-bold fs-5" style="color: #c4a76a;">
-                            @order.OrderItems.Sum(i => i.UnitPrice * i.Quantity).ToString("N0") đ
-                        </span>
-                    </div>
-                </div>
-                <div class="order-body">
-                    <div class="table-responsive">
-                        <table class="table table-borderless align-middle mb-0">
-                            <tbody>
-                                @foreach (var item in order.OrderItems)
-                                {
-                                    <tr>
-                                        <td style="width: 80px;">
-                                            <img src="@(string.IsNullOrEmpty(item.Product?.ImageUrl) ? $"https://via.placeholder.com/60/FDFBF7/B89B5E?text={item.Product?.Grade}" : item.Product.ImageUrl)" class="product-img" alt="@item.Product?.Name" />
-                                        </td>
-                                        <td>
-                                            <h6 class="mb-0 font-serif">@item.Product?.Name</h6>
-                                            <small class="text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.75rem;">Số lượng: @item.Quantity</small>
-                                        </td>
-                                        <td class="text-end fw-bold" style="color: var(--luxury-gold);">
-                                            @((item.UnitPrice * item.Quantity).ToString("N0")) đ
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-
+                    <div>
                         @if (order.Status == "Pending")
                         {
-                            <div class="text-end mt-4 pt-3 border-top">
-                                <form asp-action="CancelOrder" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
-                                    <button type="submit" class="btn btn-outline-danger px-4 py-2 rounded-1">Hủy Đơn Hàng</button>
-                                </form>
+                            <span class="status-badge status-pending">Chờ Xử Lý</span>
+                        }
+                        else if (order.Status == "Paid")
+                        {
+                            <span class="status-badge status-paid">Đã Thanh Toán</span>
+                        }
+                        else if (order.Status == "Cancelled")
+                        {
+                            <span class="status-badge status-cancelled">Đã Hủy</span>
+                        }
+                        else if (order.Status == "Shipped")
+                        {
+                            <span class="status-badge" style="background-color: #e3f2fd; color: #0277bd; border: 1px solid #b3e5fc;">Đang Giao</span>
+                        }
+                        else if (order.Status == "Completed")
+                        {
+                            <span class="status-badge" style="background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c3e6cb;">Giao Thành Công</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge bg-secondary text-white">@order.Status</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="order-progress">
+                    <div class="stepper-wrapper">
+                        @{
+                            bool isPaid = order.Status == "Paid" || order.Status == "Shipped" || order.Status == "Completed";
+                            bool isShipped = order.Status == "Shipped" || order.Status == "Completed";
+                            bool isCompleted = order.Status == "Completed";
+                            bool isCancelled = order.Status == "Cancelled";
+                        }
+                        
+                        @if (isCancelled)
+                        {
+                            <div class="stepper-item completed">
+                                <div class="step-counter"><i class="bi bi-clipboard-check"></i></div>
+                                <div class="step-name">Đã Đặt Hàng</div>
+                            </div>
+                            <div class="stepper-item cancelled cancelled-line">
+                                <div class="step-counter"><i class="bi bi-x-circle"></i></div>
+                                <div class="step-name">Đã Hủy</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="stepper-item completed">
+                                <div class="step-counter"><i class="bi bi-clipboard-check"></i></div>
+                                <div class="step-name">Chờ Xử Lý</div>
+                            </div>
+                            <div class="stepper-item @(isPaid ? "completed" : "")">
+                                <div class="step-counter"><i class="bi bi-credit-card"></i></div>
+                                <div class="step-name">Đã Thanh Toán</div>
+                            </div>
+                            <div class="stepper-item @(isShipped ? "completed" : "")">
+                                <div class="step-counter"><i class="bi bi-truck"></i></div>
+                                <div class="step-name">Đang Giao</div>
+                            </div>
+                            <div class="stepper-item @(isCompleted ? "completed" : "")">
+                                <div class="step-counter"><i class="bi bi-check-circle"></i></div>
+                                <div class="step-name">Hoàn Thành</div>
                             </div>
                         }
                     </div>
                 </div>
+
+                <div class="order-body">
+                    @foreach (var item in order.OrderItems)
+                    {
+                        <div class="order-item">
+                            <img src="@(string.IsNullOrEmpty(item.Product?.ImageUrl) ? "https://via.placeholder.com/90" : item.Product.ImageUrl)" alt="@item.Product?.Name" class="item-img" />
+                            <div class="item-details">
+                                <div class="item-name">
+                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" class="text-decoration-none text-dark">
+                                        @item.Product?.Name
+                                    </a>
+                                </div>
+                                <div class="item-meta">
+                                    Dòng sản phẩm: @item.Product?.Grade &nbsp;|&nbsp; Số lượng: <strong>@item.Quantity</strong>
+                                </div>
+                            </div>
+                            <div class="item-price text-end">
+                                @((item.UnitPrice * item.Quantity).ToString("N0")) VNĐ
+                                
+                                @if (order.Status == "Completed")
+                                {
+                                    var reviewedIds = ViewBag.ReviewedProductIds as List<int> ?? new List<int>();
+                                    <div class="mt-2">
+                                        @if (!reviewedIds.Contains(item.ProductId))
+                                        {
+                                            <button class="btn btn-sm btn-outline-luxury" style="font-size: 0.75rem; padding: 4px 10px;" data-bs-toggle="modal" data-bs-target="#reviewModal-@item.ProductId-@order.OrderId">
+                                                <i class="bi bi-star-fill text-warning me-1"></i> Đánh Giá
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-white text-success border border-success px-2 py-1 fw-normal" style="font-size: 0.75rem;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Đã đánh giá
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="order-footer d-flex justify-content-end align-items-center gap-2">
+                    <form asp-controller="Cart" asp-action="Reorder" method="post">
+                        <input type="hidden" name="orderId" value="@order.OrderId" />
+                        <button type="submit" class="btn btn-luxury btn-sm text-uppercase px-4 py-2" style="letter-spacing: 1px; font-weight: 500; border-radius: 2px;">
+                            <i class="bi bi-arrow-repeat me-1"></i> Mua Lại
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-luxury btn-sm text-uppercase px-4 py-2" style="letter-spacing: 1px; font-weight: 500; border-radius: 2px;" data-bs-toggle="modal" data-bs-target="#invoiceModal-@order.OrderId">
+                        Xem Hóa Đơn
+                    </button>
+                    @if (order.Status == "Pending")
+                    {
+                        <form asp-controller="Cart" asp-action="CancelOrder" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Thao tác này không thể hoàn tác.');">
+                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm text-uppercase px-4 py-2" style="letter-spacing: 1px; font-weight: 500; border-radius: 2px;">
+                                Hủy Đơn Hàng
+                            </button>
+                        </form>
+                    }
+                </div>
             </div>
+
+            <!-- Modal Chi Tiết Hóa Đơn -->
+            <div class="modal fade" id="invoiceModal-@order.OrderId" tabindex="-1" aria-labelledby="invoiceModalLabel-@order.OrderId" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header border-bottom-0 pt-4 pb-0 px-4">
+                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 pt-0" id="print-section-@order.OrderId">
+                            <div class="text-center mb-4">
+                                <h3 class="font-serif fw-bold text-uppercase">Hóa Đơn Mua Hàng</h3>
+                                <p class="text-muted mb-0">GunDam MVC - Sự Chính Xác Vượt Thời Gian</p>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-sm-6">
+                                    <h6 class="font-serif fw-bold border-bottom pb-2 mb-3">Thông Tin Đơn Hàng</h6>
+                                    <p class="mb-1"><strong>Mã Đơn Hàng:</strong> #@order.OrderId</p>
+                                    <p class="mb-1"><strong>Ngày Đặt:</strong> @order.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                                    <p class="mb-1"><strong>Trạng Thái:</strong> @(order.Status == "Paid" ? "Đã Thanh Toán" : (order.Status == "Pending" ? "Chờ Xử Lý" : (order.Status == "Cancelled" ? "Đã Hủy" : (order.Status == "Shipped" ? "Đang Giao" : (order.Status == "Completed" ? "Giao Thành Công" : order.Status)))))</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h6 class="font-serif fw-bold border-bottom pb-2 mb-3">Thông Tin Giao Hàng</h6>
+                                    <p class="mb-1"><strong>Người Nhận:</strong> @order.FirstName @order.LastName</p>
+                                    <p class="mb-1"><strong>Số Điện Thoại:</strong> @order.PhoneNumber</p>
+                                    <p class="mb-1"><strong>Địa Chỉ:</strong> @order.AddressLine1 @(!string.IsNullOrEmpty(order.City) ? ", " + order.City : "")</p>
+                                </div>
+                            </div>
+
+                            <table class="table table-bordered border-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th class="text-center">Số lượng</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>@item.Product?.Name</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+                                            <td class="text-end">@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-end text-muted fw-normal text-uppercase" style="font-size: 0.85rem;">Tạm tính:</th>
+                                        <th class="text-end text-muted" style="font-size: 0.9rem;">@order.OrderItems.Sum(i => i.UnitPrice * i.Quantity).ToString("N0") đ</th>
+                                    </tr>
+                                    @{
+                                        decimal shippingFee = 0;
+                                        if (!string.IsNullOrEmpty(order.AddressLine1))
+                                        {
+                                            if (order.AddressLine1.Contains("Vũng Tàu", StringComparison.OrdinalIgnoreCase) || order.AddressLine1.Contains("vung tau", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                shippingFee = 20000;
+                                            }
+                                            else
+                                            {
+                                                shippingFee = 40000;
+                                            }
+                                        }
+                                    }
+                                    @if (shippingFee > 0)
+                                    {
+                                        <tr>
+                                            <th colspan="3" class="text-end text-danger fw-normal text-uppercase" style="font-size: 0.85rem;">Phí vận chuyển:</th>
+                                            <th class="text-end text-danger" style="font-size: 0.9rem;">+@shippingFee.ToString("N0") đ</th>
+                                        </tr>
+                                    }
+                                    @if (order.TierDiscountAmount > 0)
+                                    {
+                                        <tr>
+                                            <th colspan="3" class="text-end text-success fw-normal text-uppercase" style="font-size: 0.85rem;">Khuyến mãi / Ưu đãi:</th>
+                                            <th class="text-end text-success" style="font-size: 0.9rem;">-@order.TierDiscountAmount.ToString("N0") đ</th>
+                                        </tr>
+                                    }
+                                    @if (order.PointsUsed > 0)
+                                    {
+                                        <tr>
+                                            <th colspan="3" class="text-end text-success fw-normal text-uppercase" style="font-size: 0.85rem;">Sử dụng điểm (@order.PointsUsed điểm):</th>
+                                            <th class="text-end text-success" style="font-size: 0.9rem;">-@((order.PointsUsed * 1000).ToString("N0")) đ</th>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <th colspan="3" class="text-end text-uppercase">Tổng cộng:</th>
+                                        <th class="text-end fs-5" style="color: var(--luxury-gold);">@order.OrderTotal.ToString("N0") đ</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <div class="text-center mt-5 pt-4 border-top">
+                                <p class="font-serif fst-italic text-muted">Cảm ơn quý khách đã tin tưởng và mua sắm tại GunDam MVC!</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0 pb-4 px-4 justify-content-center">
+                            <button type="button" class="btn btn-outline-dark px-4" data-bs-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-luxury px-4" onclick="printInvoice('print-section-@order.OrderId')">
+                                <i class="bi bi-printer me-2"></i> In Hóa Đơn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Đánh Giá (Đưa ra ngoài order-card để không bị lỗi backdrop che khuất) -->
+            @if (order.Status == "Completed")
+            {
+                @foreach (var item in order.OrderItems)
+                {
+                    <div class="modal fade text-start" id="reviewModal-@item.ProductId-@order.OrderId" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow" style="border-radius: 2px;">
+                                <form asp-controller="Cart" asp-action="SubmitReview" method="post">
+                                    <div class="modal-header border-bottom-0 pt-4 pb-0 px-4">
+                                        <h5 class="modal-title font-serif fw-bold" style="color: var(--luxury-gold);">Đánh Giá Sản Phẩm</h5>
+                                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4 pt-3">
+                                        <input type="hidden" name="productId" value="@item.ProductId" />
+                                        <div class="d-flex align-items-center mb-4">
+                                            <img src="@(string.IsNullOrEmpty(item.Product?.ImageUrl) ? "https://via.placeholder.com/50" : item.Product.ImageUrl)" style="width: 50px; height: 50px; object-fit: cover; border-radius: 2px;" class="me-3 border shadow-sm" />
+                                            <strong class="font-serif fs-5">@item.Product?.Name</strong>
+                                        </div>
+                                        <div class="mb-4 text-center">
+                                            <p class="text-muted small text-uppercase mb-2" style="letter-spacing: 1px;">Chất lượng sản phẩm</p>
+                                            <select name="rating" class="form-select shadow-none mx-auto w-75 text-center" required>
+                                                <option value="5" selected>5 Sao - Tuyệt vời</option>
+                                                <option value="4">4 Sao - Rất tốt</option>
+                                                <option value="3">3 Sao - Bình thường</option>
+                                                <option value="2">2 Sao - Kém</option>
+                                                <option value="1">1 Sao - Rất kém</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small text-muted text-uppercase" style="letter-spacing: 1px;">Nhận xét của bạn</label>
+                                            <textarea name="comment" class="form-control shadow-none" rows="4" placeholder="Hãy chia sẻ cảm nhận của bạn về độ chi tiết, chất lượng nhựa..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-top-0 pb-4 px-4">
+                                        <button type="submit" class="btn btn-luxury w-100">Gửi Đánh Giá</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
         }
     }
 </div>
+
+@section Scripts {
+    <script>
+        function printInvoice(divId) {
+            // Thêm class print-area vào phần cần in
+            var printSection = document.getElementById(divId);
+            printSection.classList.add('print-area');
+            
+            // Gọi lệnh in của trình duyệt
+            window.print();
+            
+            // Xóa class sau khi in xong để trả lại giao diện bình thường
+            printSection.classList.remove('print-area');
+        }
+    </script>
+}

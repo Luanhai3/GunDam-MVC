@@ -26,19 +26,50 @@
     <h2 class="font-serif mb-5 text-center text-uppercase" style="letter-spacing: 2px;">Quản Lý Sản Phẩm</h2>
 
     <!-- Thanh điều hướng Admin -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <a asp-action="Dashboard" class="btn btn-outline-luxury py-2 px-3 me-2">Xem Dashboard</a>
             <a asp-action="Orders" class="btn btn-outline-luxury py-2 px-3">Quản Lý Đơn Hàng</a>
+            <a asp-action="Users" class="btn btn-outline-luxury py-2 px-3 ms-2">Quản Lý Người Dùng</a>
         </div>
-        <a asp-action="Create" class="btn btn-luxury py-2 px-4">Thêm Sản Phẩm Mới</a>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <form method="get" class="d-flex align-items-center m-0">
+                <select name="grade" class="form-select shadow-none border-0 px-2 me-2" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent; font-size: 0.9rem; width: auto;" onchange="this.form.submit()">
+                    <option value="">Tất cả Cấp Độ</option>
+                    <option value="HG" selected="@(ViewBag.Grade == "HG")">HG</option>
+                    <option value="RG" selected="@(ViewBag.Grade == "RG")">RG</option>
+                    <option value="MG" selected="@(ViewBag.Grade == "MG")">MG</option>
+                    <option value="PG" selected="@(ViewBag.Grade == "PG")">PG</option>
+                </select>
+                <div class="input-group" style="width: 280px;">
+                    <input type="text" name="searchQuery" value="@ViewBag.SearchQuery" class="form-control shadow-none border-0 px-2" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent; font-size: 0.9rem;" placeholder="Tên sản phẩm, Cấp độ..." />
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchQuery) || !string.IsNullOrEmpty(ViewBag.Grade))
+                    {
+                        <a asp-action="Index" class="btn border-0 shadow-none px-2 text-danger" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent;" title="Xóa tìm kiếm"><i class="bi bi-x-lg"></i></a>
+                    }
+                    <button type="submit" class="btn border-0 shadow-none px-2 text-muted" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent;"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+            <a href="/Admin/ExportProductsCsv?searchQuery=@ViewBag.SearchQuery&grade=@ViewBag.Grade" class="btn btn-outline-dark py-2 px-3"><i class="bi bi-file-earmark-excel me-1"></i> Xuất CSV</a>
+            <a asp-action="Create" class="btn btn-luxury py-2 px-4">Thêm Sản Phẩm Mới</a>
+        </div>
     </div>
 
     <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
+        @Html.AntiForgeryToken()
+        <div class="d-flex align-items-center mb-3 gap-2 fade-in-up flex-wrap">
+            <span class="text-muted small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-ui-checks-grid me-1"></i>Thao tác hàng loạt:</span>
+            <button class="btn btn-sm btn-danger px-3 shadow-none rounded-1" onclick="submitBulkDeleteProducts()"><i class="bi bi-trash-fill me-1"></i> Xóa Sản Phẩm</button>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-luxury mb-0">
                 <thead>
                     <tr>
+                        <th style="width: 40px;" class="text-center">
+                            <input class="form-check-input shadow-none" type="checkbox" id="selectAllProducts">
+                        </th>
+                        <th style="width: 70px;">Hình Ảnh</th>
                         <th>Tên Sản Phẩm</th>
                         <th>Cấp Độ</th>
                         <th>Giá</th>
@@ -50,6 +81,12 @@
                     @foreach (var item in Model)
                     {
                         <tr>
+                            <td class="text-center">
+                                <input class="form-check-input shadow-none product-checkbox" type="checkbox" value="@item.Id">
+                            </td>
+                            <td>
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? $"https://via.placeholder.com/50/FDFBF7/B89B5E?text={item.Grade}" : item.ImageUrl)" alt="@item.Name" class="border shadow-sm" style="width: 50px; height: 50px; object-fit: cover; border-radius: 2px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="showImageModal(this.src, '@item.Name')" title="Nhấn để phóng to" />
+                            </td>
                             <td class="font-serif fw-bold">@item.Name</td>
                             <td>@item.Grade</td>
                             <td style="color: var(--luxury-gold);" class="fw-bold">@item.Price.ToString("N0") đ</td>
@@ -64,5 +101,106 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Phân Trang (Pagination) -->
+        <nav class="mt-4 pt-3 border-top fade-in-up">
+            <ul class="pagination justify-content-center mb-0">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link text-dark shadow-none" href="?page=@(ViewBag.CurrentPage - 1)&searchQuery=@ViewBag.SearchQuery&grade=@ViewBag.Grade">Trang Trước</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link @(i == ViewBag.CurrentPage ? "bg-dark border-dark text-white" : "text-dark") shadow-none" href="?page=@i&searchQuery=@ViewBag.SearchQuery&grade=@ViewBag.Grade">@i</a>
+                    </li>
+                }
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link text-dark shadow-none" href="?page=@(ViewBag.CurrentPage + 1)&searchQuery=@ViewBag.SearchQuery&grade=@ViewBag.Grade">Trang Sau</a>
+                    </li>
+                }
+            </ul>
+        </nav>
     </div>
 </div>
+
+<!-- Modal Phóng To Hình Ảnh -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title font-serif fw-bold" id="imagePreviewModalLabel" style="color: var(--text-primary);">Chi Tiết Hình Ảnh</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4 pt-2">
+                <img id="previewImage" src="" class="img-fluid rounded border shadow-sm" alt="Preview" style="max-height: 70vh; object-fit: contain; width: 100%;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hiển thị Modal phóng to ảnh
+        function showImageModal(src, title) {
+            document.getElementById('previewImage').src = src;
+            document.getElementById('imagePreviewModalLabel').innerText = title;
+            var imageModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            imageModal.show();
+        }
+
+        // Chức năng "Chọn tất cả"
+        const selectAllProducts = document.getElementById('selectAllProducts');
+        if (selectAllProducts) {
+            selectAllProducts.addEventListener('change', function(e) {
+                var isChecked = e.target.checked;
+                document.querySelectorAll('.product-checkbox').forEach(function(cb) {
+                    cb.checked = isChecked;
+                });
+            });
+        }
+
+        // Xử lý gửi biểu mẫu Xóa hàng loạt
+        function submitBulkDeleteProducts() {
+            var selectedIds = [];
+            document.querySelectorAll('.product-checkbox:checked').forEach(function(cb) {
+                selectedIds.push(cb.value);
+            });
+
+            if (selectedIds.length === 0) {
+                toastr.warning('Vui lòng chọn ít nhất một sản phẩm để thao tác.');
+                return;
+            }
+
+            if (!confirm(`CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN ${selectedIds.length} sản phẩm đã chọn? Thao tác này không thể hoàn tác!`)) return;
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/BulkDeleteProducts';
+
+            selectedIds.forEach(function(id) {
+                var idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'productIds';
+                idInput.value = id;
+                form.appendChild(idInput);
+            });
+
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if(token) {
+               var tokenInput = document.createElement('input');
+               tokenInput.type = 'hidden';
+               tokenInput.name = '__RequestVerificationToken';
+               tokenInput.value = token.value;
+               form.appendChild(tokenInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+}

@@ -18,7 +18,7 @@ namespace GunDammvc.Models
 
         public async Task CreateOrderAsync(ClaimsPrincipal user, Order order)
         {
-            order.OrderPlaced = DateTime.Now;
+            order.OrderPlaced = DateTime.UtcNow;
             var shoppingCart = await _shoppingCartService.GetOrCreateCartAsync(user);
             order.OrderTotal = shoppingCart.TotalPrice;
             _context.Orders.Add(order);

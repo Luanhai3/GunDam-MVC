@@ -68,8 +68,14 @@ namespace GunDammvc.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("Points")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
+
+                    b.Property<int>("TotalPoints")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
@@ -116,6 +122,33 @@ namespace GunDammvc.Migrations
                     b.ToTable("CartItems");
                 });
 
+            modelBuilder.Entity("GunDammvc.Models.Coupon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Coupons");
+                });
+
             modelBuilder.Entity("GunDammvc.Models.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -136,6 +169,9 @@ namespace GunDammvc.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -171,6 +207,9 @@ namespace GunDammvc.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
+                    b.Property<int>("PointsUsed")
+                        .HasColumnType("integer");
+
                     b.Property<string>("State")
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
@@ -178,6 +217,9 @@ namespace GunDammvc.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal>("TierDiscountAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -227,6 +269,35 @@ namespace GunDammvc.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("GunDammvc.Models.PointHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PointsChanged")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PointHistories");
+                });
+
             modelBuilder.Entity("GunDammvc.Models.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -253,7 +324,7 @@ namespace GunDammvc.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<int>("Stock")
                         .HasColumnType("integer");
@@ -266,7 +337,7 @@ namespace GunDammvc.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "A modern High Grade interpretation of the original Gundam, celebrating the 40th anniversary of Gunpla.",
+                            Description = "A modern High Grade interpretation of the original Gundam.",
                             Grade = "HG",
                             ImageUrl = "",
                             Name = "HG 1/144 RX-78-2 Gundam [Beyond Global]",
@@ -276,7 +347,7 @@ namespace GunDammvc.Migrations
                         new
                         {
                             Id = 2,
-                            Description = "The iconic angel-winged Gundam from 'Gundam Wing: Endless Waltz', recreated in stunning Real Grade detail.",
+                            Description = "Iconic angel-winged Gundam.",
                             Grade = "RG",
                             ImageUrl = "",
                             Name = "RG 1/144 Wing Gundam Zero EW",
@@ -286,13 +357,50 @@ namespace GunDammvc.Migrations
                         new
                         {
                             Id = 3,
-                            Description = "Char Aznable's final mobile suit, designed by Hajime Katoki. A masterpiece of engineering and design.",
+                            Description = "Char Aznable's final mobile suit.",
                             Grade = "MG",
                             ImageUrl = "",
                             Name = "MG 1/100 Sazabi Ver.Ka",
                             Price = 1200000m,
                             Stock = 5
                         });
+                });
+
+            modelBuilder.Entity("GunDammvc.Models.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("HelpfulCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("GunDammvc.Models.ShoppingCart", b =>
@@ -495,6 +603,36 @@ namespace GunDammvc.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("GunDammvc.Models.PointHistory", b =>
+                {
+                    b.HasOne("GunDammvc.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GunDammvc.Models.Review", b =>
+                {
+                    b.HasOne("GunDammvc.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GunDammvc.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GunDammvc.Models.ShoppingCart", b =>

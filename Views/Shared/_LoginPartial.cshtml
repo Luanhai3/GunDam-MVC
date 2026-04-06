@@ -8,14 +8,25 @@
 @if (SignInManager.IsSignedIn(User))
 {
     var user = await UserManager.GetUserAsync(User);
-    var displayName = user?.FullName ?? user?.UserName;
+    var rawName = user?.Email ?? user?.UserName;
+    var displayName = rawName?.Split('@')[0];
 
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-person-fill me-1"></i> @displayName
+            <i class="bi bi-person-fill me-1"></i> Xin chào! @displayName
+            @if (user != null)
+            {
+                var tierColor = user.MembershipTier == "Kim Cương" ? "#E0FFFF" : (user.MembershipTier == "Vàng" ? "#FFD700" : (user.MembershipTier == "Bạc" ? "#C0C0C0" : "#CD7F32"));
+                <span class="badge ms-1" style="background-color: @tierColor; color: #000; font-weight: 600; letter-spacing: 0.5px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#tierModal" onclick="event.stopPropagation();" title="Xem quy tắc thăng hạng">
+                    Thành Viên @user.MembershipTier <i class="bi bi-info-circle ms-1"></i>
+                </span>
+                <span class="ms-1 fw-bold" style="color: var(--luxury-gold); text-transform: none; font-size: 0.85rem; letter-spacing: 0.5px;"><i class="bi bi-stars"></i> @user.Points Điểm</span>
+            }
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
             <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Tài Khoản Của Tôi</a></li>
+            <li><a class="dropdown-item" asp-controller="Cart" asp-action="History">Đơn Hàng Của Tôi</a></li>
+            <li><a class="dropdown-item" asp-controller="Cart" asp-action="PointHistory">Lịch Sử Điểm Thưởng</a></li>
             @if (User.IsInRole("Admin"))
             {
                 <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Quản Lý Sản Phẩm</a></li>

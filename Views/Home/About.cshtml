@@ -1,0 +1,206 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Giới Thiệu";
+}
+
+<style>
+    body {
+        background: #f4f3ef;
+        font-family: "Segoe UI", sans-serif;
+        color: #2b2b2b;
+        scroll-behavior: smooth;
+    }
+
+    .serif {
+        font-family: "Playfair Display", serif;
+        letter-spacing: 0.5px;
+    }
+
+    /* HERO */
+    .hero {
+        height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background:
+            linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+            url('https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=1600') center/cover;
+        color: #fff;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+        font-weight: 500;
+    }
+
+    .hero p {
+        color: #ddd;
+        max-width: 650px;
+        margin: 15px auto 0;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    /* SECTION */
+    .section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 100px 20px;
+    }
+
+    /* GRID */
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
+    }
+
+    .card-value {
+        background: transparent;
+        border: none;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .card-value i {
+        font-size: 45px;
+        color: var(--luxury-gold);
+        margin-bottom: 20px;
+    }
+
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 12px;
+        font-family: "Playfair Display", serif;
+        font-size: 1.4rem;
+    }
+
+    .card-desc {
+        font-size: 15px;
+        color: #666;
+        line-height: 1.7;
+    }
+
+    /* FEATURE SECTION */
+    .feature {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+    }
+
+    .feature img {
+        width: 100%;
+        border-radius: 6px;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .divider {
+        width: 60px;
+        height: 2px;
+        background: var(--luxury-gold);
+        margin: 20px 0;
+    }
+
+    .text-muted {
+        color: #555;
+        line-height: 1.9;
+        font-size: 1.05rem;
+    }
+
+    /* ANIMATION */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: 0.8s ease;
+    }
+
+    .fade-in.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @@media (max-width: 768px) {
+        .grid-3, .feature {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+    <div>
+        <h1 class="serif">Về Chúng Tôi</h1>
+        <p>
+            Hành trình đam mê và sự cống hiến không ngừng cho nghệ thuật mô hình Gunpla.
+        </p>
+    </div>
+</section>
+
+<!-- FEATURE STORY -->
+<section class="section feature fade-in">
+    <div>
+        <h2 class="serif">Câu Chuyện Của GunDam MVC</h2>
+        <div class="divider"></div>
+
+        <p class="text-muted">
+            Được thành lập từ tình yêu mãnh liệt dành cho thế giới mecha, GunDam MVC ra đời với sứ mệnh mang đến cho những người đam mê mô hình tại Việt Nam một không gian mua sắm chuyên nghiệp và đẳng cấp.
+        </p>
+
+        <p class="text-muted">
+            Chúng tôi không chỉ bán mô hình, chúng tôi trao gửi những giá trị nghệ thuật, sự tỉ mỉ và niềm vui khi tự tay kiến tạo nên những cỗ máy huyền thoại từ những mảnh ghép nhỏ bé.
+        </p>
+    </div>
+    <img src="https://images.unsplash.com/photo-1577978924027-8657e5e9cfe3?w=800&auto=format&fit=crop&q=60" alt="Gundam Story">
+</section>
+
+<!-- CORE VALUES -->
+<section class="section fade-in" style="background-color: #fff; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.03);">
+    <div class="text-center mb-5">
+        <h2 class="serif">Giá Trị Cốt Lõi</h2>
+        <div class="divider mx-auto"></div>
+    </div>
+    
+    <div class="grid-3">
+        <div class="card-value">
+            <i class="bi bi-shield-check"></i>
+            <div class="card-title">Chính Hãng 100%</div>
+            <div class="card-desc">
+                Cam kết phân phối các sản phẩm Gunpla chính hãng từ Bandai, đảm bảo chất lượng và độ chi tiết hoàn hảo nhất.
+            </div>
+        </div>
+
+        <div class="card-value">
+            <i class="bi bi-gem"></i>
+            <div class="card-title">Trải Nghiệm Đẳng Cấp</div>
+            <div class="card-desc">
+                Không gian mua sắm tinh tế, dịch vụ chăm sóc khách hàng tận tâm và chế độ hậu mãi vượt trội.
+            </div>
+        </div>
+
+        <div class="card-value">
+            <i class="bi bi-people"></i>
+            <div class="card-title">Cộng Đồng Gắn Kết</div>
+            <div class="card-desc">
+                Xây dựng và phát triển cộng đồng người chơi Gunpla văn minh, chia sẻ đam mê và kỹ năng lắp ráp.
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    const elements = document.querySelectorAll('.fade-in');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting){
+                entry.target.classList.add('show');
+            }
+        });
+    });
+
+    elements.forEach(el => observer.observe(el));
+</script>
+}

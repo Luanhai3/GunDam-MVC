@@ -1,45 +1,137 @@
 @model GunDammvc.Models.Product
 
 @{
-    ViewData["Title"] = "Product Details";
+    ViewData["Title"] = "Chi Tiết Sản Phẩm";
+    var relatedProducts = ViewBag.RelatedProducts as List<GunDammvc.Models.Product>;
 }
 
-<div class="container my-5">
-    <div class="row g-5">
+<style>
+    .related-card {
+        transition: all 0.3s ease;
+    }
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+        border-color: var(--luxury-gold) !important;
+    }
+</style>
 
-        <!-- Image -->
-        <div class="col-md-6">
-            <img src="@(string.IsNullOrEmpty(Model.ImageUrl) 
-                        ? "https://via.placeholder.com/500x600" 
-                        : Model.ImageUrl)"
-                 class="img-fluid">
-        </div>
+<div class="container py-5 fade-in-up">
+    <div class="bg-white p-4 p-md-5 border shadow-sm" style="border-radius: 2px;">
+        <div class="row g-5">
 
-        <!-- Info -->
-        <div class="col-md-6">
-            <h2>@Model.Name</h2>
-            <p class="text-muted">@Model.Grade</p>
+            <!-- Image -->
+            <div class="col-md-5 text-center">
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? $"https://via.placeholder.com/500x600/FDFBF7/B89B5E?text={Model.Grade}" : Model.ImageUrl)" 
+                     class="img-fluid border shadow-sm" style="border-radius: 2px; object-fit: cover; width: 100%; max-height: 550px;">
+            </div>
 
-            <h4 style="color: #C9A96E;">
-                @Model.Price.ToString("N0") VNĐ
-            </h4>
+            <!-- Info -->
+            <div class="col-md-7">
+                <h2 class="font-serif fw-bold mb-2 text-dark">@Model.Name</h2>
+                <p class="text-muted text-uppercase mb-4" style="letter-spacing: 1px; font-size: 0.9rem;">Cấp độ: @Model.Grade</p>
 
-            <p class="mt-4">
-                @Model.Description
-            </p>
+                <h3 class="fw-bold mb-4" style="color: var(--luxury-gold);">
+                    @Model.Price.ToString("N0") VNĐ
+                </h3>
 
-            <p>
-                Stock: @Model.Stock
-            </p>
-
-            <form asp-action="AddToCart" asp-controller="Cart" method="post">
-                <input type="hidden" name="productId" value="@Model.Id" />
-                <div class="input-group mb-3" style="max-width: 200px;">
-                    <input type="number" name="quantity" class="form-control" value="1" min="1" max="@Model.Stock">
-                    <button class="btn btn-dark" type="submit">Add to Cart</button>
+                <div class="mb-4 text-muted" style="line-height: 1.8;">
+                    @Model.Description
                 </div>
-            </form>
-        </div>
 
+                <hr class="my-4" />
+
+                @if (Model.Stock > 0)
+                {
+                    <div class="mb-3 text-muted small">
+                        Kho còn: <strong style="color: var(--luxury-gold);">@Model.Stock</strong> sản phẩm
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3 mt-4">
+                        <div class="input-group shadow-sm" style="width: 140px; border-radius: 2px;">
+                            <button class="btn border text-muted bg-light" type="button" onclick="decreaseQty()">-</button>
+                            <input type="number" id="quantity-@Model.Id" name="quantity" class="form-control text-center border-start-0 border-end-0 shadow-none" value="1" min="1" max="@Model.Stock" oninput="validateQty(this, @Model.Stock)" onblur="ensureMinQty(this)" style="background: #fff; font-weight: 500;">
+                            <button class="btn border text-muted bg-light" type="button" onclick="increaseQty(@Model.Stock)">+</button>
+                        </div>
+                        
+                        <button type="button" onclick="addToCartAjax(@Model.Id)" class="btn btn-luxury px-4 py-2 flex-grow-1" style="height: 40px;">
+                            <i class="bi bi-cart-plus me-2"></i> Thêm Vào Giỏ
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-3 text-danger fw-bold small">
+                        Tạm hết hàng
+                    </div>
+                    <button class="btn btn-secondary px-4 py-2 w-100 disabled" style="cursor: not-allowed; border-radius: 2px;">
+                        Hết Hàng
+                    </button>
+                }
+            </div>
+        </div>
     </div>
 </div>
+
+@if (relatedProducts != null && relatedProducts.Any())
+{
+    <div class="container mt-5 pt-5 border-top fade-in-up" style="animation-delay: 0.2s;">
+        <h3 class="font-serif text-center mb-5 text-uppercase" style="letter-spacing: 2px;">Sản Phẩm Cùng Cấp Độ</h3>
+        <div class="row g-4">
+            @foreach (var item in relatedProducts)
+            {
+                <div class="col-md-6 col-lg-3">
+                    <a asp-controller="Shop" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
+                        <div class="bg-white border shadow-sm h-100 d-flex flex-column related-card" style="border-radius: 2px;">
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? $"https://via.placeholder.com/300x300/FDFBF7/B89B5E?text={item.Grade}" : item.ImageUrl)" class="w-100 border-bottom" style="height: 250px; object-fit: cover; border-top-left-radius: 2px; border-top-right-radius: 2px;" alt="@item.Name">
+                            <div class="p-3 text-center d-flex flex-column flex-grow-1">
+                                <h6 class="font-serif fw-bold mb-2">@item.Name</h6>
+                                <div class="text-muted small mb-2 text-uppercase" style="letter-spacing: 1px;">@item.Grade</div>
+                                <div class="mt-auto fw-bold" style="color: var(--luxury-gold);">@item.Price.ToString("N0") VNĐ</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function increaseQty(maxStock) {
+            var qtyInput = document.getElementById('quantity-@Model.Id');
+            var currentVal = parseInt(qtyInput.value);
+            if (currentVal < maxStock) {
+                qtyInput.value = currentVal + 1;
+            } else {
+                toastr.warning('Bạn đã chọn tối đa số lượng tồn kho.');
+            }
+        }
+
+        function decreaseQty() {
+            var qtyInput = document.getElementById('quantity-@Model.Id');
+            var currentVal = parseInt(qtyInput.value);
+            if (currentVal > 1) {
+                qtyInput.value = currentVal - 1;
+            }
+        }
+
+        function validateQty(input, maxStock) {
+            if (input.value !== '') {
+                var currentVal = parseInt(input.value);
+                if (currentVal > maxStock) {
+                    input.value = maxStock;
+                    toastr.warning('Chỉ còn tối đa ' + maxStock + ' sản phẩm trong kho.');
+                }
+            }
+        }
+
+        function ensureMinQty(input) {
+            var currentVal = parseInt(input.value);
+            if (isNaN(currentVal) || currentVal < 1) {
+                input.value = 1;
+            }
+        }
+    </script>
+}

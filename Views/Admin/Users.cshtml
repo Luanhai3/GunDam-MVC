@@ -1,0 +1,334 @@
+@model IEnumerable<GunDammvc.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table-luxury th {
+        border-bottom: 2px solid var(--border-color);
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        padding-bottom: 15px;
+    }
+    .table-luxury td {
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        padding: 15px 0;
+    }
+    .point-input {
+        width: 100px;
+        border: 1px solid var(--border-color);
+        border-radius: 2px;
+        padding: 6px 12px;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .point-input:focus {
+        border-color: var(--luxury-gold);
+        box-shadow: none;
+        outline: none;
+    }
+</style>
+
+<div class="container py-5 fade-in-up">
+    <h2 class="font-serif mb-5 text-center text-uppercase" style="letter-spacing: 2px;">Quản Lý Người Dùng</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <a asp-action="Dashboard" class="btn btn-outline-luxury py-2 px-3 me-2">Xem Dashboard</a>
+            <a asp-action="Index" class="btn btn-outline-luxury py-2 px-3 me-2">Quản Lý Sản Phẩm</a>
+            <a asp-action="Orders" class="btn btn-outline-luxury py-2 px-3">Quản Lý Đơn Hàng</a>
+        </div>
+        <form method="get" class="d-flex align-items-center m-0">
+            <div class="input-group" style="width: 280px;">
+                <input type="text" name="searchQuery" value="@ViewBag.SearchQuery" class="form-control shadow-none border-0 px-2" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent; font-size: 0.9rem;" placeholder="Tên, Email, SĐT..." />
+                @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
+                {
+                    <a asp-action="Users" class="btn border-0 shadow-none px-2 text-danger" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent;" title="Xóa tìm kiếm"><i class="bi bi-x-lg"></i></a>
+                }
+                <button type="submit" class="btn border-0 shadow-none px-2 text-muted" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; background: transparent;"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
+        
+        <div class="d-flex align-items-center mb-3 gap-2 fade-in-up flex-wrap">
+            <span class="text-muted small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-ui-checks-grid me-1"></i>Thao tác hàng loạt:</span>
+            <button class="btn btn-sm btn-outline-danger px-3 shadow-none rounded-1" onclick="submitBulkAction('lock')"><i class="bi bi-lock-fill me-1"></i> Khóa</button>
+            <button class="btn btn-sm btn-outline-success px-3 shadow-none rounded-1" onclick="submitBulkAction('unlock')"><i class="bi bi-unlock-fill me-1"></i> Mở Khóa</button>
+            <span class="border-start mx-1" style="height: 20px;"></span>
+            <button class="btn btn-sm btn-outline-primary px-3 shadow-none rounded-1" onclick="submitBulkRoleAction('promote')"><i class="bi bi-star-fill me-1"></i> Cấp Quyền Admin</button>
+            <button class="btn btn-sm btn-outline-secondary px-3 shadow-none rounded-1" onclick="submitBulkRoleAction('demote')"><i class="bi bi-star-half me-1"></i> Hủy Quyền</button>
+            <span class="border-start mx-1" style="height: 20px;"></span>
+            <button class="btn btn-sm btn-danger px-3 shadow-none rounded-1" onclick="submitBulkDeleteAction()"><i class="bi bi-trash-fill me-1"></i> Xóa</button>
+            <span class="border-start mx-1" style="height: 20px;"></span>
+            <a href="/Admin/ExportUsersCsv?searchQuery=@ViewBag.SearchQuery" class="btn btn-sm btn-outline-dark px-3 shadow-none rounded-1"><i class="bi bi-file-earmark-excel me-1"></i> Xuất CSV</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-luxury mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;" class="text-center">
+                            <input class="form-check-input shadow-none" type="checkbox" id="selectAll">
+                        </th>
+                        <th>Tên Người Dùng</th>
+                        <th>Email</th>
+                        <th>Số Điện Thoại</th>
+                        <th class="text-center">Hạng</th>
+                        <th class="text-center">Điểm Thưởng</th>
+                        <th class="text-end">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var adminUserIds = ViewBag.AdminUserIds as List<string> ?? new List<string>();
+                    }
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <input class="form-check-input shadow-none user-checkbox" type="checkbox" value="@user.Id">
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">
+                                    @(string.IsNullOrEmpty(user.FullName) ? "Chưa cập nhật" : user.FullName)
+                                </div>
+                                @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                                {
+                                    <span class="badge bg-danger mt-1" style="font-size: 0.7rem;"><i class="bi bi-lock-fill me-1"></i>Đã Khóa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success mt-1" style="font-size: 0.7rem;"><i class="bi bi-check-circle-fill me-1"></i>Hoạt Động</span>
+                                }
+                                @if (adminUserIds.Contains(user.Id))
+                                {
+                                    <span class="badge bg-primary mt-1 ms-1" style="font-size: 0.7rem;"><i class="bi bi-star-fill me-1"></i>Admin</span>
+                                }
+                            </td>
+                            <td>@user.Email</td>
+                            <td>@(string.IsNullOrEmpty(user.PhoneNumber) ? "Chưa cập nhật" : user.PhoneNumber)</td>
+                            <td class="text-center">
+                                @{
+                                    var badgeBg = user.MembershipTier == "Kim Cương" ? "bg-info text-dark" : (user.MembershipTier == "Vàng" ? "bg-warning text-dark" : (user.MembershipTier == "Bạc" ? "bg-secondary text-white" : "bg-dark text-white"));
+                                }
+                                <span class="badge @badgeBg">@user.MembershipTier</span>
+                            </td>
+                            <td class="text-center fw-bold" style="color: var(--luxury-gold);">@user.Points Điểm</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <form asp-controller="Admin" asp-action="UpdateUserPoints" method="post" class="d-flex align-items-center gap-2 m-0">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <input type="number" name="points" class="point-input" value="@user.Points" min="0" style="width: 80px;" />
+                                        <button type="submit" class="btn btn-sm btn-luxury px-3">Lưu</button>
+                                    </form>
+                                    <form asp-controller="Admin" asp-action="ToggleUserLock" method="post" class="m-0" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của tài khoản này?');">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-success px-3 py-1" title="Mở khóa tài khoản"><i class="bi bi-unlock-fill"></i></button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-danger px-3 py-1" title="Khóa tài khoản"><i class="bi bi-lock-fill"></i></button>
+                                        }
+                                    </form>
+                                    <form asp-controller="Admin" asp-action="ToggleUserRole" method="post" class="m-0" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi quyền quản trị của tài khoản này?');">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        @if (adminUserIds.Contains(user.Id))
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-primary px-3 py-1" title="Hủy quyền Admin"><i class="bi bi-star-half"></i></button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-primary px-3 py-1" title="Cấp quyền Admin"><i class="bi bi-star-fill"></i></button>
+                                        }
+                                    </form>
+                                    <form asp-controller="Admin" asp-action="DeleteUser" method="post" class="m-0" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản này? Thao tác này không thể hoàn tác!');">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 py-1" title="Xóa tài khoản"><i class="bi bi-trash-fill"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phân Trang (Pagination) -->
+        <nav class="mt-4 pt-3 border-top fade-in-up">
+            <ul class="pagination justify-content-center mb-0">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link text-dark shadow-none" href="?page=@(ViewBag.CurrentPage - 1)&searchQuery=@ViewBag.SearchQuery">Trang Trước</a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link @(i == ViewBag.CurrentPage ? "bg-dark border-dark text-white" : "text-dark") shadow-none" href="?page=@i&searchQuery=@ViewBag.SearchQuery">@i</a>
+                    </li>
+                }
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link text-dark shadow-none" href="?page=@(ViewBag.CurrentPage + 1)&searchQuery=@ViewBag.SearchQuery">Trang Sau</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Chức năng "Chọn tất cả"
+        document.getElementById('selectAll').addEventListener('change', function(e) {
+            var isChecked = e.target.checked;
+            document.querySelectorAll('.user-checkbox').forEach(function(cb) {
+                cb.checked = isChecked;
+            });
+        });
+
+        // Xử lý gửi biểu mẫu Thao tác hàng loạt
+        function submitBulkAction(actionType) {
+            var selectedIds = [];
+            document.querySelectorAll('.user-checkbox:checked').forEach(function(cb) {
+                selectedIds.push(cb.value);
+            });
+
+            if (selectedIds.length === 0) {
+                toastr.warning('Vui lòng chọn ít nhất một tài khoản để thao tác.');
+                return;
+            }
+
+            var actionText = actionType === 'lock' ? 'khóa' : 'mở khóa';
+            if (!confirm(`Bạn có chắc chắn muốn ${actionText} ${selectedIds.length} tài khoản đã chọn?`)) return;
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/BulkToggleUserLock';
+
+            var actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'actionType';
+            actionInput.value = actionType;
+            form.appendChild(actionInput);
+
+            selectedIds.forEach(function(id) {
+                var idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'userIds';
+                idInput.value = id;
+                form.appendChild(idInput);
+            });
+
+            // Tận dụng Token bảo mật CSRF có sẵn từ form khác trên trang để xác thực Request
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if(token) {
+               var tokenInput = document.createElement('input');
+               tokenInput.type = 'hidden';
+               tokenInput.name = '__RequestVerificationToken';
+               tokenInput.value = token.value;
+               form.appendChild(tokenInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Xử lý gửi biểu mẫu Thao tác Quyền Quản trị hàng loạt
+        function submitBulkRoleAction(roleActionType) {
+            var selectedIds = [];
+            document.querySelectorAll('.user-checkbox:checked').forEach(function(cb) {
+                selectedIds.push(cb.value);
+            });
+
+            if (selectedIds.length === 0) {
+                toastr.warning('Vui lòng chọn ít nhất một tài khoản để thao tác.');
+                return;
+            }
+
+            var actionText = roleActionType === 'promote' ? 'cấp quyền Admin cho' : 'hủy quyền Admin của';
+            if (!confirm(`Bạn có chắc chắn muốn ${actionText} ${selectedIds.length} tài khoản đã chọn?`)) return;
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/BulkToggleUserRole';
+
+            var actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'roleActionType';
+            actionInput.value = roleActionType;
+            form.appendChild(actionInput);
+
+            selectedIds.forEach(function(id) {
+                var idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'userIds';
+                idInput.value = id;
+                form.appendChild(idInput);
+            });
+
+            // Tận dụng Token bảo mật CSRF có sẵn từ form khác trên trang để xác thực Request
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if(token) {
+               var tokenInput = document.createElement('input');
+               tokenInput.type = 'hidden';
+               tokenInput.name = '__RequestVerificationToken';
+               tokenInput.value = token.value;
+               form.appendChild(tokenInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Xử lý gửi biểu mẫu Xóa hàng loạt
+        function submitBulkDeleteAction() {
+            var selectedIds = [];
+            document.querySelectorAll('.user-checkbox:checked').forEach(function(cb) {
+                selectedIds.push(cb.value);
+            });
+
+            if (selectedIds.length === 0) {
+                toastr.warning('Vui lòng chọn ít nhất một tài khoản để thao tác.');
+                return;
+            }
+
+            if (!confirm(`CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN ${selectedIds.length} tài khoản đã chọn? Thao tác này không thể hoàn tác!`)) return;
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/BulkDeleteUsers';
+
+            selectedIds.forEach(function(id) {
+                var idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'userIds';
+                idInput.value = id;
+                form.appendChild(idInput);
+            });
+
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if(token) {
+               var tokenInput = document.createElement('input');
+               tokenInput.type = 'hidden';
+               tokenInput.name = '__RequestVerificationToken';
+               tokenInput.value = token.value;
+               form.appendChild(tokenInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+}

@@ -54,6 +54,59 @@
         <p class="text-muted mb-4" style="max-width: 600px;">
             Cảm ơn bạn đã lựa chọn GunDam MVC. Đơn hàng của bạn đang được xử lý và sẽ sớm được vận chuyển.
         </p>
+
+        @if (Model.PaymentMethodSelection == GunDammvc.Models.PaymentMethod.BankTransfer && Model.Status == "Pending")
+        {
+            <div class="card border-0 shadow-sm mb-4" style="max-width: 700px; width: 100%; background-color: #fff; border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4 p-md-5">
+                    <h5 class="font-serif fw-bold text-uppercase mb-4 text-center" style="color: var(--luxury-gold); letter-spacing: 1px;">Hướng Dẫn Chuyển Khoản</h5>
+                    <p class="text-muted small text-center mb-4">Quý khách vui lòng dùng Ứng dụng ngân hàng quét mã QR dưới đây hoặc chuyển khoản thủ công để hoàn tất đặt hàng.</p>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-5 text-center mb-4 mb-md-0 border-end">
+                            <img src="https://img.vietqr.io/image/MB-0348699436-compact2.png?amount=@Model.OrderTotal.ToString("0")&addInfo=Thanh%20toan%20don%20hang%20@Model.OrderId&accountName=HOANG%20LOUIS" class="img-fluid rounded border p-2" alt="QR Code" style="max-width: 220px;">
+                        </div>
+                        <div class="col-md-7 ps-md-4 text-start">
+                            <div class="mb-3">
+                                <span class="text-muted small d-block mb-1">Ngân hàng</span>
+                                <strong class="fs-6">MB Bank (Ngân hàng Quân Đội)</strong>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small d-block mb-1">Chủ tài khoản</span>
+                                <strong class="fs-6">HOANG LOUIS</strong>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small d-block mb-1">Số tài khoản</span>
+                                <strong class="fs-5 text-primary">0348699436</strong>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small d-block mb-1">Số tiền cần chuyển</span>
+                                <strong class="fs-5 text-danger">@Model.OrderTotal.ToString("N0") VNĐ</strong>
+                            </div>
+                            <div class="mb-1">
+                                <span class="text-muted small d-block mb-1">Nội dung chuyển khoản</span>
+                                <strong class="fs-6 px-3 py-2 bg-light border d-inline-block rounded user-select-all" style="color: var(--luxury-gold); border-style: dashed !important;">Thanh toan don hang @Model.OrderId</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+            @if (Model.PointsUsed > 0)
+            {
+                <div class="alert alert-light m-0 px-4 py-2 shadow-sm" style="border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 2px;">
+                    <i class="bi bi-coin me-2" style="color: var(--luxury-gold);"></i> Bạn đã dùng <strong>@Model.PointsUsed điểm</strong> (-@((Model.PointsUsed * 1000).ToString("N0")) đ)
+                </div>
+            }
+            @if (TempData["EarnedPoints"] != null)
+            {
+                <div class="alert alert-success m-0 px-4 py-2 shadow-sm" style="background-color: rgba(184, 155, 94, 0.1); border: 1px solid var(--luxury-gold); color: #8a6d3b; border-radius: 2px;">
+                    <i class="bi bi-stars me-2"></i> Chúc mừng! Bạn vừa tích lũy được <strong>@TempData["EarnedPoints"] điểm thưởng</strong>
+                </div>
+            }
+        </div>
         <div class="d-flex gap-3 justify-content-center mt-3">
             <button onclick="window.print()" class="btn btn-outline-luxury">
                 <i class="bi bi-printer me-2"></i> In Hóa Đơn
@@ -107,8 +160,47 @@
                 </tbody>
                 <tfoot>
                     <tr>
+                        <th colspan="3" class="text-end text-muted fw-normal text-uppercase" style="font-size: 0.85rem;">Tạm tính:</th>
+                        <th class="text-end text-muted" style="font-size: 0.9rem;">@Model.OrderItems.Sum(i => i.UnitPrice * i.Quantity).ToString("N0") đ</th>
+                    </tr>
+                    @{
+                        decimal shippingFee = 0;
+                        if (!string.IsNullOrEmpty(Model.AddressLine1))
+                        {
+                            if (Model.AddressLine1.Contains("Vũng Tàu", StringComparison.OrdinalIgnoreCase) || Model.AddressLine1.Contains("vung tau", StringComparison.OrdinalIgnoreCase))
+                            {
+                                shippingFee = 20000;
+                            }
+                            else
+                            {
+                                shippingFee = 40000;
+                            }
+                        }
+                    }
+                    @if (shippingFee > 0)
+                    {
+                        <tr>
+                            <th colspan="3" class="text-end text-danger fw-normal text-uppercase" style="font-size: 0.85rem;">Phí vận chuyển:</th>
+                            <th class="text-end text-danger" style="font-size: 0.9rem;">+@shippingFee.ToString("N0") đ</th>
+                        </tr>
+                    }
+                    @if (Model.TierDiscountAmount > 0)
+                    {
+                        <tr>
+                            <th colspan="3" class="text-end text-success fw-normal text-uppercase" style="font-size: 0.85rem;">Khuyến mãi / Ưu đãi:</th>
+                            <th class="text-end text-success" style="font-size: 0.9rem;">-@Model.TierDiscountAmount.ToString("N0") đ</th>
+                        </tr>
+                    }
+                    @if (Model.PointsUsed > 0)
+                    {
+                        <tr>
+                            <th colspan="3" class="text-end text-success fw-normal text-uppercase" style="font-size: 0.85rem;">Sử dụng điểm (@Model.PointsUsed điểm):</th>
+                            <th class="text-end text-success" style="font-size: 0.9rem;">-@((Model.PointsUsed * 1000).ToString("N0")) đ</th>
+                        </tr>
+                    }
+                    <tr>
                         <th colspan="3" class="text-end text-uppercase">Tổng cộng:</th>
-                        <th class="text-end fs-5">@Model.OrderItems.Sum(i => i.UnitPrice * i.Quantity).ToString("N0") đ</th>
+                        <th class="text-end fs-5" style="color: var(--luxury-gold);">@Model.OrderTotal.ToString("N0") đ</th>
                     </tr>
                 </tfoot>
             </table>

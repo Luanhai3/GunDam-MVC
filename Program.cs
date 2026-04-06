@@ -1,3 +1,5 @@
+
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using GunDammvc.Data;
@@ -63,6 +65,20 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<GunDammvc.Data.ApplicationDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Lỗi khi chạy Migration: " + ex.Message);
+    }
+}
 
 
 app.Run();

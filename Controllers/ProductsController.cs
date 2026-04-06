@@ -79,7 +79,7 @@ namespace GunDammvc.Controllers
         // ===============================
         // 📌 CHI TIẾT SẢN PHẨM
         // ===============================
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id, int? ratingFilter)
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -88,6 +88,24 @@ namespace GunDammvc.Controllers
             {
                 return NotFound();
             }
+
+            // 🎯 Lấy danh sách đánh giá và tính sao trung bình
+            var reviewsQuery = _context.Set<Review>()
+                .Include(r => r.User)
+                .Where(r => r.ProductId == id);
+
+            // Tính tổng quát trước khi lọc
+            ViewBag.AverageRating = await reviewsQuery.AnyAsync() ? await reviewsQuery.AverageAsync(r => r.Rating) : 0.0;
+            ViewBag.ReviewCount = await reviewsQuery.CountAsync();
+
+            // Áp dụng bộ lọc nếu có
+            if (ratingFilter.HasValue)
+            {
+                reviewsQuery = reviewsQuery.Where(r => r.Rating == ratingFilter.Value);
+            }
+
+            ViewBag.Reviews = await reviewsQuery.OrderByDescending(r => r.CreatedAt).ToListAsync();
+            ViewBag.CurrentRatingFilter = ratingFilter;
 
             // 🎯 Sản phẩm liên quan
             var relatedProducts = await _context.Products
@@ -126,6 +144,22 @@ namespace GunDammvc.Controllers
             ViewBag.Grade = grade;
 
             return View("Index", products);
+        }
+
+        // ===============================
+        // 👍 ĐÁNH GIÁ HỮU ÍCH
+        // ===============================
+        [HttpPost]
+        public async Task<IActionResult> MarkReviewHelpful(int reviewId)
+        {
+            var review = await _context.Set<Review>().FindAsync(reviewId);
+            if (review != null)
+            {
+                review.HelpfulCount++;
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, newCount = review.HelpfulCount });
+            }
+            return Json(new { success = false, message = "Không tìm thấy đánh giá" });
         }
     }
 }

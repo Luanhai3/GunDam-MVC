@@ -13,6 +13,9 @@ namespace GunDammvc.Models
 
         [Required]
         public string UserId { get; set; } = string.Empty;
+        public decimal TierDiscountAmount { get; set; } = 0;
+        public int PointsUsed { get; set; } = 0;            
+        public string? CouponCode { get; set; }
 
         [ForeignKey("UserId")]
         public virtual ApplicationUser? User { get; set; }
@@ -64,7 +67,7 @@ namespace GunDammvc.Models
 
         public DateTime OrderPlaced { get; set; }
 
-        public DateTime OrderDate { get; set; } = DateTime.Now;
+        public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
         public string Status { get; set; } = "Pending";
 
@@ -77,8 +80,11 @@ namespace GunDammvc.Models
 
     public enum PaymentMethod
     {
-        [Display(Name = "Cash on Delivery")]
-        COD,
-        // Add other payment methods here
+        [Display(Name = "Thanh toán khi nhận hàng (COD)")]
+        COD = 0,
+        [Display(Name = "Chuyển khoản ngân hàng")]
+        BankTransfer = 1,
+        [Display(Name = "Thanh toán VNPay")]
+        VNPay = 2
     }
 }

@@ -68,4 +68,9 @@ else
             });
         };
     }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <text>toastr.warning("@TempData["WarningMessage"]");</text>
+    }
 </script>

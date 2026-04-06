@@ -158,6 +158,14 @@
 
                             <div class="product-body">
                                 <div class="product-title">@item.Name</div>
+                                @if (item.Stock > 0)
+                                {
+                                    <div class="small text-muted mb-2" style="font-size: 0.8rem;">Kho còn: <strong style="color: var(--luxury-gold);">@item.Stock</strong> sản phẩm</div>
+                                }
+                                else
+                                {
+                                    <div class="small text-danger mb-2 fw-bold" style="font-size: 0.8rem;">Tạm hết hàng</div>
+                                }
                                 <div class="product-grade">Cấp độ: @item.Grade</div>
                                 <div class="product-description">@item.Description</div>
                             </div>

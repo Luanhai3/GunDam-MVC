@@ -1,19 +1,16 @@
 ﻿@{
-    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout !=  null)
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
     {
         Layout = parentLayout.ToString();
     }
     else
     {
-        Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+        Layout = "/Views/Shared/_Layout.cshtml";
     }
 }
 
-<h1>Manage your account</h1>
-
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
+<div class="container py-5 fade-in-up">
+    <h2 class="font-serif text-center mb-5 text-uppercase" style="letter-spacing: 2px;">Quản Lý Tài Khoản</h2>
     <div class="row">
         <div class="col-md-3">
             <partial name="_ManageNav" />

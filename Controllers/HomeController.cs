@@ -19,5 +19,10 @@ namespace GunDammvc.Controllers
             var products = await _productService.GetProductsAsync(grade);
             return View(products);
         }
+
+        public IActionResult About()
+        {
+            return View();
+        }
     }
 }

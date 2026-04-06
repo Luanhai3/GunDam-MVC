@@ -10,6 +10,7 @@ namespace GunDammvc.Data
             : base(options)
         {
         }
+        public DbSet<Coupon> Coupons { get; set; }
 
         // DbSets
         public DbSet<Product> Products { get; set; }
@@ -18,25 +19,35 @@ namespace GunDammvc.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
 
+        public DbSet<PointHistory> PointHistories { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder); 
 
-            // Thiết lập mối quan hệ
+            // ShoppingCart → CartItems
             modelBuilder.Entity<ShoppingCart>()
                 .HasMany(s => s.CartItems)
                 .WithOne()
                 .HasForeignKey(c => c.ShoppingCartId)
                 .OnDelete(DeleteBehavior.Cascade);
             
+            // Order → OrderItems
             modelBuilder.Entity<Order>()
-    .HasMany(o => o.OrderItems)
-    .WithOne(oi => oi.Order)
-    .HasForeignKey(oi => oi.OrderId)
-    .OnDelete(DeleteBehavior.Cascade);
+                .HasMany(o => o.OrderItems)
+                .WithOne(oi => oi.Order)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // (Optional nhưng nên có) PointHistory → User
+            modelBuilder.Entity<PointHistory>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Bắt đầu thêm dữ liệu mẫu cho bảng Product
+            // Seed Product
             modelBuilder.Entity<Product>().HasData(
                 new Product
                 {
@@ -45,8 +56,8 @@ namespace GunDammvc.Data
                     Grade = "HG",
                     Price = 250000,
                     Stock = 20,
-                    Description = "A modern High Grade interpretation of the original Gundam, celebrating the 40th anniversary of Gunpla.",
-                    ImageUrl = "" // Để trống để dùng ảnh placeholder
+                    Description = "A modern High Grade interpretation of the original Gundam.",
+                    ImageUrl = ""
                 },
                 new Product
                 {
@@ -55,7 +66,7 @@ namespace GunDammvc.Data
                     Grade = "RG",
                     Price = 350000,
                     Stock = 15,
-                    Description = "The iconic angel-winged Gundam from 'Gundam Wing: Endless Waltz', recreated in stunning Real Grade detail.",
+                    Description = "Iconic angel-winged Gundam.",
                     ImageUrl = ""
                 },
                 new Product
@@ -65,7 +76,7 @@ namespace GunDammvc.Data
                     Grade = "MG",
                     Price = 1200000,
                     Stock = 5,
-                    Description = "Char Aznable's final mobile suit, designed by Hajime Katoki. A masterpiece of engineering and design.",
+                    Description = "Char Aznable's final mobile suit.",
                     ImageUrl = ""
                 }
             );

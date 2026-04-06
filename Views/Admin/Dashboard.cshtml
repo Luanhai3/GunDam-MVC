@@ -6,32 +6,261 @@
     var ordersData = ViewBag.MonthlyOrders as int[];
 }
 
-<div class="container py-5 fade-in-up">
-    <h2 class="font-serif mb-5 text-center text-uppercase" style="letter-spacing: 2px;">Báo Cáo Doanh Thu Năm @ViewBag.CurrentYear</h2>
+<style>
+    .stat-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border-radius: 4px !important;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+        border-color: var(--luxury-gold) !important;
+    }
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+        opacity: 0.9;
+    }
 
-    <div class="row g-4 mb-5">
-        <div class="col-md-6">
-            <div class="bg-white p-5 border shadow-sm text-center" style="border-radius: 2px;">
-                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px;">Tổng Doanh Thu</h6>
-                <h2 class="font-serif fw-bold mb-0" style="color: var(--luxury-gold);">@((revenueData?.Sum() ?? 0).ToString("N0")) VNĐ</h2>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="bg-white p-5 border shadow-sm text-center" style="border-radius: 2px;">
-                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px;">Đơn Hàng Thành Công</h6>
-                <h2 class="font-serif fw-bold mb-0 text-dark">@(ordersData?.Sum() ?? 0) Đơn</h2>
+    @@media print {
+        body * { visibility: hidden; }
+        #print-area, #print-area * { visibility: visible; }
+        #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        form, .btn, header, footer, .navbar { display: none !important; }
+        .shadow-sm { box-shadow: none !important; border: 1px solid #ddd !important; }
+        canvas { max-width: 100% !important; }
+    }
+</style>
+
+<div id="print-area" class="container py-5 fade-in-up">
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+        <h2 class="font-serif mb-0 text-uppercase" style="letter-spacing: 2px;">Báo Cáo Doanh Thu</h2>
+        <div class="d-flex align-items-center flex-wrap gap-3">
+            <form method="get" class="d-flex align-items-center mb-0">
+                <label class="me-2 text-muted fw-bold text-uppercase" style="font-size: 0.85rem; letter-spacing: 1px;">Chọn Năm:</label>
+                <select name="year" id="yearSelector" class="form-select shadow-none border-0" style="border-bottom: 1px solid var(--luxury-gold) !important; border-radius: 0; width: 120px; font-weight: 500;" onchange="this.form.submit()">
+                    @if (ViewBag.AvailableYears != null)
+                    {
+                        foreach (var year in ViewBag.AvailableYears)
+                        {
+                            <option value="@year" selected="@(year == ViewBag.CurrentYear)">Năm @year</option>
+                        }
+                    }
+                </select>
+            </form>
+            <div class="d-flex gap-2 ms-md-3 border-start ps-md-3">
+                <button type="button" class="btn btn-outline-dark px-3 shadow-sm rounded-1" onclick="window.print()">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Xuất PDF
+                </button>
+                <a href="/Admin/ExportDashboardCsv?year=@ViewBag.CurrentYear" class="btn btn-luxury px-3 shadow-sm rounded-1">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Xuất CSV
+                </a>
             </div>
         </div>
     </div>
 
-    <div class="bg-white p-5 border shadow-sm" style="border-radius: 2px;">
-        <h5 class="font-serif mb-4 text-center">Biểu Đồ Thống Kê Theo Tháng</h5>
-        <canvas id="revenueChart" height="100"></canvas>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-4 mb-5">
+        <div class="col">
+            <div class="bg-white p-4 border shadow-sm text-center stat-card h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-wallet2 stat-icon" style="color: var(--luxury-gold);"></i>
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.85rem;">Tổng Doanh Thu</h6>
+                <h2 id="totalRevenueValue" class="font-serif fw-bold mb-0" style="color: var(--luxury-gold);">@((revenueData?.Sum() ?? 0).ToString("N0")) đ</h2>
+                <div id="revenueGrowth" class="small mt-2 fw-medium @((ViewBag.RevenueGrowth ?? 0) >= 0 ? "text-success" : "text-danger")">
+                    <i class="bi @((ViewBag.RevenueGrowth ?? 0) >= 0 ? "bi-arrow-up-right" : "bi-arrow-down-right")"></i> @Math.Abs((double)(ViewBag.RevenueGrowth ?? 0)).ToString("0.1")% so với tháng trước
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="bg-white p-4 border shadow-sm text-center stat-card h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-bag-check stat-icon text-success"></i>
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.85rem;">Đơn Thành Công</h6>
+                <h2 id="totalOrdersValue" class="font-serif fw-bold mb-0 text-success">@(ordersData?.Sum() ?? 0) Đơn</h2>
+                <div id="cancellationRate" class="small mt-2 fw-medium text-danger">
+                    <i class="bi bi-x-circle"></i> Tỷ lệ hủy: @((ViewBag.CancellationRate ?? 0).ToString("0.1"))%
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="bg-white p-4 border shadow-sm text-center stat-card h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-graph-up-arrow stat-icon text-info"></i>
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.85rem;">Giá Trị Đơn Trung Bình</h6>
+                <h2 id="aovValue" class="font-serif fw-bold mb-0 text-info">@((ViewBag.AverageOrderValue ?? 0).ToString("N0")) đ</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div class="bg-white p-4 border shadow-sm text-center stat-card h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-people stat-icon" style="color: #6f42c1;"></i>
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.85rem;">Khách Hàng Mới</h6>
+                <h2 id="uniqueCustomersValue" class="font-serif fw-bold mb-0" style="color: #6f42c1;">@(ViewBag.UniqueCustomersCount ?? 0)</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div id="pendingOrdersContainer" class="bg-white p-4 border shadow-sm text-center position-relative stat-card h-100 d-flex flex-column justify-content-center">
+                @if (ViewBag.PendingOrdersCount != null && ViewBag.PendingOrdersCount > 0)
+                {
+                    <span id="pendingBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow" style="font-family: sans-serif; font-size: 0.9rem; transform: translate(-50%, -50%) !important; z-index: 10;">
+                        @ViewBag.PendingOrdersCount Mới
+                    </span>
+                }
+                <i id="pendingIcon" class="bi bi-hourglass-split stat-icon @(ViewBag.PendingOrdersCount > 0 ? "text-danger" : "text-secondary")"></i>
+                <h6 class="text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.85rem;">Đơn Chờ Xử Lý</h6>
+                <h2 id="pendingOrdersValue" class="font-serif fw-bold mb-0 @(ViewBag.PendingOrdersCount > 0 ? "text-danger" : "text-dark")">@ViewBag.PendingOrdersCount Đơn</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="bg-white p-4 p-md-5 border shadow-sm h-100" style="border-radius: 2px;">
+                <h5 class="font-serif mb-4 text-center text-uppercase" style="letter-spacing: 1px;">Thống Kê Theo Tháng</h5>
+                <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="bg-white p-4 p-md-5 border shadow-sm h-100 d-flex flex-column" style="border-radius: 2px;">
+                <h5 class="font-serif mb-4 text-center text-uppercase" style="letter-spacing: 1px;">Tỷ Lệ Thanh Toán</h5>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center" style="position: relative; min-height: 250px;">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
     
+    <div class="row g-4 mt-1">
+        <!-- 5 Đơn Hàng Mới Nhất -->
+        <div class="col-lg-7">
+            <div class="bg-white p-4 p-md-5 border shadow-sm h-100" style="border-radius: 2px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="font-serif mb-0 text-uppercase" style="letter-spacing: 1px; font-size: 1.1rem;">5 Đơn Mới Nhất</h5>
+                    <a asp-action="Orders" class="btn btn-sm btn-outline-luxury py-1 px-2" style="font-size: 0.8rem;">Xem Tất Cả</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="text-uppercase text-muted small" style="letter-spacing: 1px;">
+                            <tr>
+                                <th class="border-bottom pb-3">Mã Đơn</th>
+                                <th class="border-bottom pb-3">Khách Hàng</th>
+                                <th class="border-bottom pb-3 text-end">Tổng Tiền</th>
+                                <th class="border-bottom pb-3 text-center">TT</th>
+                                <th class="border-bottom pb-3 text-end">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.RecentOrders != null)
+                            {
+                                foreach (var order in ViewBag.RecentOrders)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-dark py-3">#@order.OrderId</td>
+                                        <td class="py-3">
+                                            <div class="text-truncate" style="max-width: 130px;" title="@order.FirstName @order.LastName">@order.FirstName @order.LastName</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">@order.OrderDate.ToString("dd/MM/yyyy")</div>
+                                        </td>
+                                        <td class="text-end fw-bold py-3" style="color: var(--luxury-gold);">@order.OrderTotal.ToString("N0") đ</td>
+                                        <td class="text-center py-3">
+                                            @if (order.PaymentMethodSelection == GunDammvc.Models.PaymentMethod.BankTransfer)
+                                            {
+                                                <span class="small text-dark fw-medium" title="Chuyển Khoản"><i class="bi bi-bank"></i></span>
+                                            }
+                                            else if (order.PaymentMethodSelection == GunDammvc.Models.PaymentMethod.VNPay)
+                                            {
+                                                <span class="small text-primary fw-medium" title="VNPay"><i class="bi bi-credit-card"></i></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="small text-secondary fw-medium" title="COD"><i class="bi bi-cash"></i></span>
+                                            }
+                                        </td>
+                                        <td class="text-end py-3">
+                                            <form asp-controller="Admin" asp-action="UpdateOrderStatusAjax" method="post" class="d-flex justify-content-end gap-1 m-0" onsubmit="updateStatusAjax(event, this)">
+                                                <input type="hidden" name="orderId" value="@order.OrderId" />
+                                                <select name="newStatus" class="form-select form-select-sm shadow-none px-2" style="width: auto; border-radius: 2px; font-size: 0.8rem;">
+                                                    <option value="Pending" selected="@(order.Status == "Pending")">Chờ Xử Lý</option>
+                                                    <option value="Paid" selected="@(order.Status == "Paid")">Đã Thanh Toán</option>
+                                                    <option value="Shipped" selected="@(order.Status == "Shipped")">Đang Giao</option>
+                                                    <option value="Completed" selected="@(order.Status == "Completed")">Hoàn Thành</option>
+                                                    <option value="Cancelled" selected="@(order.Status == "Cancelled")">Đã Hủy</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-luxury px-2"><i class="bi bi-check2"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="5" class="text-center text-muted py-5">Chưa có đơn hàng nào</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 Khách Hàng -->
+        <div class="col-lg-5">
+            <div class="bg-white p-4 p-md-5 border shadow-sm h-100" style="border-radius: 2px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="font-serif mb-0 text-uppercase" style="letter-spacing: 1px; font-size: 1.1rem;">Top 5 Khách Hàng</h5>
+                    <a asp-action="Users" class="btn btn-sm btn-outline-luxury py-1 px-2" style="font-size: 0.8rem;">Xem Tất Cả</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="text-uppercase text-muted small" style="letter-spacing: 1px;">
+                            <tr>
+                                <th class="border-bottom pb-3">Khách Hàng</th>
+                                <th class="border-bottom pb-3 text-center">Số Đơn</th>
+                                <th class="border-bottom pb-3 text-end">Tổng Chi Tiêu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topCustomersBody">
+                            @if (ViewBag.TopCustomers != null)
+                            {
+                                int rank = 1;
+                                foreach (var customer in ViewBag.TopCustomers)
+                                {
+                                    <tr>
+                                        <td class="py-3">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="fw-bold d-flex justify-content-center align-items-center rounded-circle" style="width: 35px; height: 35px; background-color: @(rank == 1 ? "#ffd700" : (rank == 2 ? "#e0e0e0" : (rank == 3 ? "#cd7f32" : "#f8f9fa"))); color: @(rank <= 3 ? "#fff" : "#6c757d"); font-size: 0.9rem;">
+                                                    #@rank
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.95rem; max-width: 180px;" title="@customer.Item1">
+                                                        <span class="text-truncate">@customer.Item1</span>
+                                                        @{
+                                                            var badgeBg = customer.Item5 == "Kim Cương" ? "bg-info text-dark" : (customer.Item5 == "Vàng" ? "bg-warning text-dark" : (customer.Item5 == "Bạc" ? "bg-secondary text-white" : "bg-dark text-white"));
+                                                        }
+                                                        <span class="badge @badgeBg" style="font-size: 0.65rem; padding: 3px 6px;">@customer.Item5</span>
+                                                    </div>
+                                                    <div class="text-muted text-truncate" style="font-size: 0.8rem; max-width: 180px;" title="@customer.Item2">@customer.Item2</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-medium py-3">@customer.Item4</td>
+                                        <td class="text-end fw-bold py-3" style="color: var(--luxury-gold);">@customer.Item3.ToString("N0") đ</td>
+                                    </tr>
+                                    rank++;
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="3" class="text-center text-muted py-5">Chưa có dữ liệu giao dịch</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="text-center mt-5 pt-4 border-top">
         <a asp-action="Orders" class="btn btn-luxury px-4 py-2 me-2">Quản Lý Đơn Hàng</a>
-        <a asp-action="Index" class="btn btn-outline-luxury px-4 py-2">Quản Lý Sản Phẩm</a>
+        <a asp-action="Index" class="btn btn-outline-luxury px-4 py-2 me-2">Quản Lý Sản Phẩm</a>
+        <a asp-action="Users" class="btn btn-outline-luxury px-4 py-2">Quản Lý Người Dùng</a>
     </div>
 </div>
 
@@ -40,8 +269,29 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const ctxPayment = document.getElementById('paymentChart').getContext('2d');
+            const paymentChart = new Chart(ctxPayment, {
+                type: 'doughnut',
+                data: {
+                    labels: ['COD', 'Chuyển Khoản', 'VNPay'],
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(ViewBag.PaymentMethodCounts)),
+                        backgroundColor: ['#6c757d', '#B89B5E', '#0277bd'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { family: "'Jost', sans-serif", size: 13 } } }
+                    }
+                }
+            });
+
             const ctx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(ctx, {
+            const revenueChart = new Chart(ctx, {
                 data: {
                     labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
                     datasets: [
@@ -88,6 +338,157 @@
                     }
                 }
             });
+
+            // Cập nhật thông số qua AJAX mỗi 30 giây thay vì tải lại toàn bộ trang
+            setInterval(function () {
+                const selectedYear = document.getElementById('yearSelector').value;
+                fetch(`/Admin/GetDashboardStats?year=${selectedYear}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('totalRevenueValue').innerText = data.totalRevenue;
+                        
+                        const growthEl = document.getElementById('revenueGrowth');
+                        if (growthEl) {
+                            const growthVal = parseFloat(data.revenueGrowth);
+                            const isPositive = growthVal >= 0;
+                            growthEl.className = `small mt-2 fw-medium ${isPositive ? 'text-success' : 'text-danger'}`;
+                            growthEl.innerHTML = `<i class="bi ${isPositive ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}"></i> ${Math.abs(growthVal).toFixed(1)}% so với tháng trước`;
+                        }
+
+                        document.getElementById('totalOrdersValue').innerText = data.totalOrders;
+                        
+                        const cancelEl = document.getElementById('cancellationRate');
+                        if (cancelEl) {
+                            cancelEl.innerHTML = `<i class="bi bi-x-circle"></i> Tỷ lệ hủy: ${data.cancellationRate}%`;
+                        }
+                        document.getElementById('aovValue').innerText = data.averageOrderValue;
+                        document.getElementById('uniqueCustomersValue').innerText = data.uniqueCustomersCount;
+                        
+                        const pendingValue = document.getElementById('pendingOrdersValue');
+                        pendingValue.innerText = data.pendingOrdersCount + ' Đơn';
+                        
+                        const container = document.getElementById('pendingOrdersContainer');
+                        let badge = document.getElementById('pendingBadge');
+                        let pendingIcon = document.getElementById('pendingIcon');
+                        
+                        if (data.pendingOrdersCount > 0) {
+                            pendingValue.classList.remove('text-dark');
+                            pendingValue.classList.add('text-danger');
+                            if (pendingIcon) {
+                                pendingIcon.classList.remove('text-secondary');
+                                pendingIcon.classList.add('text-danger');
+                            }
+                            if (!badge) {
+                                container.insertAdjacentHTML('afterbegin', `<span id="pendingBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow" style="font-family: sans-serif; font-size: 0.9rem; transform: translate(-50%, -50%) !important; z-index: 10;">${data.pendingOrdersCount} Mới</span>`);
+                            } else {
+                                badge.innerText = data.pendingOrdersCount + ' Mới';
+                            }
+                        } else {
+                            pendingValue.classList.remove('text-danger');
+                            pendingValue.classList.add('text-dark');
+                            if (pendingIcon) {
+                                pendingIcon.classList.remove('text-danger');
+                                pendingIcon.classList.add('text-secondary');
+                            }
+                            if (badge) badge.remove();
+                        }
+
+                        // Cập nhật dữ liệu cho biểu đồ
+                        revenueChart.data.datasets[0].data = data.monthlyRevenue;
+                        revenueChart.data.datasets[1].data = data.monthlyOrders;
+                        revenueChart.update();
+
+                        paymentChart.data.datasets[0].data = data.paymentMethodCounts;
+                        paymentChart.update();
+
+                        if (data.topCustomers && data.topCustomers.length > 0) {
+                            let html = '';
+                            let rank = 1;
+                            data.topCustomers.forEach(c => {
+                                let bg = rank === 1 ? '#ffd700' : (rank === 2 ? '#e0e0e0' : (rank === 3 ? '#cd7f32' : '#f8f9fa'));
+                                let color = rank <= 3 ? '#fff' : '#6c757d';
+                                let badgeBg = c.tier === 'Kim Cương' ? 'bg-info text-dark' : (c.tier === 'Vàng' ? 'bg-warning text-dark' : (c.tier === 'Bạc' ? 'bg-secondary text-white' : 'bg-dark text-white'));
+                                html += `
+                                    <tr>
+                                        <td class="py-3">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="fw-bold d-flex justify-content-center align-items-center rounded-circle" style="width: 35px; height: 35px; background-color: ${bg}; color: ${color}; font-size: 0.9rem;">
+                                                    #${rank}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.95rem; max-width: 180px;" title="${c.name}">
+                                                        <span class="text-truncate">${c.name}</span>
+                                                        <span class="badge ${badgeBg}" style="font-size: 0.65rem; padding: 3px 6px;">${c.tier}</span>
+                                                    </div>
+                                                    <div class="text-muted text-truncate" style="font-size: 0.8rem; max-width: 180px;" title="${c.email}">${c.email}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-medium py-3">${c.orderCount}</td>
+                                        <td class="text-end fw-bold py-3" style="color: var(--luxury-gold);">${c.totalSpent}</td>
+                                    </tr>
+                                `;
+                                rank++;
+                            });
+                            document.getElementById('topCustomersBody').innerHTML = html;
+                        } else {
+                            document.getElementById('topCustomersBody').innerHTML = '<tr><td colspan="3" class="text-center text-muted py-5">Chưa có dữ liệu giao dịch</td></tr>';
+                        }
+                    })
+                    .catch(err => console.error('Lỗi cập nhật AJAX:', err));
+            }, 30000);
         });
+
+        // Xử lý cập nhật trạng thái đơn hàng qua AJAX (Không tải lại trang)
+        function updateStatusAjax(event, form) {
+            event.preventDefault();
+            if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng này?')) return;
+
+            // Lưu trạng thái nút và bật hiệu ứng loading
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            const formData = new FormData(form);
+            const newStatus = formData.get('newStatus');
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Khôi phục lại nút
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+
+                if (data.success) {
+                    // Hiển thị Pop-up
+                    toastr.success(data.message);
+                    
+                    // Cập nhật đổi màu Badge trên giao diện ngay lập tức
+                    const tr = form.closest('tr');
+                    const badge = tr.querySelector('td:nth-child(5) .badge');
+                    
+                    badge.className = 'badge'; // Đặt lại các class cơ bản
+                    if (newStatus === "Pending") { badge.style.cssText = 'background-color: #fff8e1; color: #9c7c00; border: 1px solid #ffeeba;'; badge.innerText = 'Chờ Xử Lý'; }
+                    else if (newStatus === "Paid") { badge.style.cssText = 'background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c3e6cb;'; badge.innerText = 'Đã Thanh Toán'; }
+                    else if (newStatus === "Shipped") { badge.style.cssText = 'background-color: #e3f2fd; color: #0277bd; border: 1px solid #b3e5fc;'; badge.innerText = 'Đang Giao'; }
+                    else if (newStatus === "Completed") { badge.style.cssText = 'background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c3e6cb;'; badge.innerText = 'Hoàn Thành'; }
+                    else if (newStatus === "Cancelled") { badge.style.cssText = 'background-color: #fbe9e7; color: #c62828; border: 1px solid #f5c6cb;'; badge.innerText = 'Đã Hủy'; }
+                } else {
+                    toastr.error(data.message || 'Có lỗi xảy ra.');
+                }
+            })
+            .catch(err => {
+                // Khôi phục lại nút khi có lỗi
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+
+                toastr.error('Lỗi kết nối tới máy chủ.');
+                console.error(err);
+            });
+        }
     </script>
 }
